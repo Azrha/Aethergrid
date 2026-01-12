@@ -378,9 +378,10 @@ export class Renderer {
     // Material with atlas
     // For simplicity, we use color for now OR UV map.
     // Let's use 3 materials for 3 InstancedMeshes (Grass, Water, Stone)
-    const matGrass = new THREE.MeshStandardMaterial({ map: this.atlasTexture, color: 0xffffff });
-    const matWater = new THREE.MeshStandardMaterial({ map: this.atlasTexture, color: 0x88ccff, transparent: true, opacity: 0.8 });
-    const matStone = new THREE.MeshStandardMaterial({ map: this.atlasTexture, color: 0x888888 });
+    // Use vibrant solid colors for the isometric blocks (Texture mapping requires UV adjustment)
+    const matGrass = new THREE.MeshStandardMaterial({ color: 0x5ba860, roughness: 0.8 });
+    const matWater = new THREE.MeshStandardMaterial({ color: 0x4fa4b8, transparent: true, opacity: 0.7, roughness: 0.1 });
+    const matStone = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.9 });
 
     // Grid step
     const step = 2; // block size in world units
@@ -495,7 +496,8 @@ export class Renderer {
       this.entities.forEach(e => {
         let sprite = this.isoSprites.get(e.id);
         if (!sprite) {
-          const mat = new THREE.SpriteMaterial({ map: this.atlasTexture, color: colorFrom(e.color) });
+          // Use simple colored sprites for now
+          const mat = new THREE.SpriteMaterial({ color: colorFrom(e.color) });
           sprite = new THREE.Sprite(mat);
           sprite.scale.set(4, 4, 1);
           this.isoEntities.add(sprite);
