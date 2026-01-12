@@ -368,146 +368,147 @@ export class Renderer {
   }
 
 
-  // Just do a simple InstancedMesh for now.
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
+  private buildIsometricTerrain(worldW: number, worldH: number) {
+    // Just do a simple InstancedMesh for now.
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
     geometry.translate(0, 0.5, 0); // anchor bottom
 
-  // Material with atlas
-  // For simplicity, we use color for now OR UV map.
-  // Let's use 3 materials for 3 InstancedMeshes (Grass, Water, Stone)
-  // Use vibrant solid colors for the isometric blocks (Texture mapping requires UV adjustment)
-  const matGrass = new THREE.MeshStandardMaterial({ color: 0x5ba860, roughness: 0.8 });
-  const matWater = new THREE.MeshStandardMaterial({ color: 0x4fa4b8, transparent: true, opacity: 0.7, roughness: 0.1 });
-  const matStone = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.9 });
+    // Material with atlas
+    // For simplicity, we use color for now OR UV map.
+    // Let's use 3 materials for 3 InstancedMeshes (Grass, Water, Stone)
+    // Use vibrant solid colors for the isometric blocks (Texture mapping requires UV adjustment)
+    const matGrass = new THREE.MeshStandardMaterial({ color: 0x5ba860, roughness: 0.8 });
+    const matWater = new THREE.MeshStandardMaterial({ color: 0x4fa4b8, transparent: true, opacity: 0.7, roughness: 0.1 });
+    const matStone = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.9 });
 
-  // Grid step
-  const step = 2; // block size in world units
-  const count = (worldW / step) * (worldH / step);
+    // Grid step
+    const step = 2; // block size in world units
+    const count = (worldW / step) * (worldH / step);
 
-  const mesh = new THREE.InstancedMesh(geometry, matGrass, count);
+    const mesh = new THREE.InstancedMesh(geometry, matGrass, count);
     mesh.castShadow = true; mesh.receiveShadow = true;
 
-  const dummy = new THREE.Object3D();
+    const dummy = new THREE.Object3D();
     let idx = 0;
-for (let x = 0; x < worldW; x += step) {
-  for (let z = 0; z < worldH; z += step) {
-    const h = fbm(x, z, 3); // -1 to 1
-    const y = Math.floor((h + 1) * 3) * step; // stepped height
-    dummy.position.set(x - worldW / 2, y, z - worldH / 2);
-    dummy.scale.set(step, step, step); // cube size matched to grid
-    dummy.updateMatrix();
-    mesh.setMatrixAt(idx++, dummy.matrix);
-  }
-}
-mesh.instanceMatrix.needsUpdate = true;
-this.isoTiles.add(mesh);
+    for (let x = 0; x < worldW; x += step) {
+      for (let z = 0; z < worldH; z += step) {
+        const h = fbm(x, z, 3); // -1 to 1
+        const y = Math.floor((h + 1) * 3) * step; // stepped height
+        dummy.position.set(x - worldW / 2, y, z - worldH / 2);
+        dummy.scale.set(step, step, step); // cube size matched to grid
+        dummy.updateMatrix();
+        mesh.setMatrixAt(idx++, dummy.matrix);
+      }
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    this.isoTiles.add(mesh);
   }
 
   private bindControls(canvas: HTMLCanvasElement) {
-  canvas.addEventListener("pointerdown", (ev) => {
-    this.pointer.down = true; this.pointer.x = ev.clientX; this.pointer.y = ev.clientY;
-  });
-  canvas.addEventListener("pointerup", () => this.pointer.down = false);
-  canvas.addEventListener("pointermove", (ev) => {
-    if (!this.pointer.down) return;
-    const dx = ev.clientX - this.pointer.x; const dy = ev.clientY - this.pointer.y;
-    this.pointer.x = ev.clientX; this.pointer.y = ev.clientY;
-    this.orbit.azimuth -= dx * 0.005;
-    this.orbit.polar = clamp(this.orbit.polar + dy * 0.005, 0.1, 1.5);
-  });
-  canvas.addEventListener("wheel", (ev) => {
-    this.orbit.distance = clamp(this.orbit.distance + ev.deltaY * 0.1, 10, 500);
-  });
-}
-
-setMode(mode: RenderMode) {
-  this.mode = mode;
-  if (mode === "isometric" || mode === "2d") {
-    this.activeCamera = this.orthoCamera;
-    this.isoGroup.visible = true;
-    this.buildTerrain(this.w, this.h); // rebuild for ISO
-    if (this.terrain) this.terrain.visible = false;
-    if (this.water) this.water.visible = false;
-  } else {
-    this.activeCamera = this.camera;
-    this.isoGroup.visible = false;
-    // rebuild for 3D
-    this.buildTerrain(this.w, this.h);
-    if (this.terrain) this.terrain.visible = true;
-    if (this.water) this.water.visible = true;
-  }
-}
-
-// Stubs for assets
-preloadAssets() { return Promise.resolve(); }
-setTheme() { }
-setFields(f: FieldPayload) { this.fieldData = f; this.needsTerrainRebuild = true; }
-setAssetStyle() { }
-resize(w: number, h: number) {
-  this.renderer.setSize(w, h, false);
-  this.camera.aspect = w / h;
-  this.camera.updateProjectionMatrix();
-
-  const aspect = w / h;
-  const frustumSize = this.orbit.distance;
-  this.orthoCamera.left = -frustumSize * aspect / 2;
-  this.orthoCamera.right = frustumSize * aspect / 2;
-  this.orthoCamera.top = frustumSize / 2;
-  this.orthoCamera.bottom = -frustumSize / 2;
-  this.orthoCamera.updateProjectionMatrix();
-}
-
-setEntities(entities: Entity[]) {
-  this.entities = entities;
-}
-
-pick() { return null; }
-
-render(worldW: number, worldH: number) {
-  if (this.needsTerrainRebuild) this.buildTerrain(worldW, worldH);
-
-  // Update camera
-  if (this.mode === "isometric") {
-    // Isometric view: 45 deg Y rot, 35.264 X rot ( atan(1/sqrt(2)) )
-    const radius = 200; // fixed distance for orthographic
-    // Actually, for ortho, position just sets direction.
-    // Isometric standard: 
-    this.orthoCamera.position.set(200, 200, 200);
-    this.orthoCamera.lookAt(0, 0, 0);
-    this.resize(this.renderer.domElement.width, this.renderer.domElement.height); // update ortho frustum based on zoom (orbit.distance)
-  } else if (this.mode === "3d") {
-    const r = this.orbit.distance;
-    const x = r * Math.sin(this.orbit.polar) * Math.sin(this.orbit.azimuth);
-    const y = r * Math.cos(this.orbit.polar);
-    const z = r * Math.sin(this.orbit.polar) * Math.cos(this.orbit.azimuth);
-    this.camera.position.set(x, y, z);
-    this.camera.lookAt(0, 0, 0);
-  }
-
-  // Update entities
-  if (this.mode === "isometric") {
-    // Render as sprites (simplified)
-    // Hide 3D Rigs
-    this.rigs.forEach(r => r.group.visible = false);
-
-    this.entities.forEach(e => {
-      let sprite = this.isoSprites.get(e.id);
-      if (!sprite) {
-        // Use simple colored sprites for now
-        const mat = new THREE.SpriteMaterial({ color: colorFrom(e.color) });
-        sprite = new THREE.Sprite(mat);
-        sprite.scale.set(4, 4, 1);
-        this.isoEntities.add(sprite);
-        this.isoSprites.set(e.id, sprite);
-      }
-      sprite.position.set(e.x - worldW / 2, e.z + 2, e.y - worldH / 2);
-      sprite.visible = true;
+    canvas.addEventListener("pointerdown", (ev) => {
+      this.pointer.down = true; this.pointer.x = ev.clientX; this.pointer.y = ev.clientY;
     });
-
-  } else {
-    // 3D Rigs (placeholder - user wants iso mostly)
+    canvas.addEventListener("pointerup", () => this.pointer.down = false);
+    canvas.addEventListener("pointermove", (ev) => {
+      if (!this.pointer.down) return;
+      const dx = ev.clientX - this.pointer.x; const dy = ev.clientY - this.pointer.y;
+      this.pointer.x = ev.clientX; this.pointer.y = ev.clientY;
+      this.orbit.azimuth -= dx * 0.005;
+      this.orbit.polar = clamp(this.orbit.polar + dy * 0.005, 0.1, 1.5);
+    });
+    canvas.addEventListener("wheel", (ev) => {
+      this.orbit.distance = clamp(this.orbit.distance + ev.deltaY * 0.1, 10, 500);
+    });
   }
 
-  this.renderer.render(this.scene, this.activeCamera);
-}
+  setMode(mode: RenderMode) {
+    this.mode = mode;
+    if (mode === "isometric" || mode === "2d") {
+      this.activeCamera = this.orthoCamera;
+      this.isoGroup.visible = true;
+      this.buildTerrain(this.w, this.h); // rebuild for ISO
+      if (this.terrain) this.terrain.visible = false;
+      if (this.water) this.water.visible = false;
+    } else {
+      this.activeCamera = this.camera;
+      this.isoGroup.visible = false;
+      // rebuild for 3D
+      this.buildTerrain(this.w, this.h);
+      if (this.terrain) this.terrain.visible = true;
+      if (this.water) this.water.visible = true;
+    }
+  }
+
+  // Stubs for assets
+  preloadAssets() { return Promise.resolve(); }
+  setTheme() { }
+  setFields(f: FieldPayload) { this.fieldData = f; this.needsTerrainRebuild = true; }
+  setAssetStyle() { }
+  resize(w: number, h: number) {
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+
+    const aspect = w / h;
+    const frustumSize = this.orbit.distance;
+    this.orthoCamera.left = -frustumSize * aspect / 2;
+    this.orthoCamera.right = frustumSize * aspect / 2;
+    this.orthoCamera.top = frustumSize / 2;
+    this.orthoCamera.bottom = -frustumSize / 2;
+    this.orthoCamera.updateProjectionMatrix();
+  }
+
+  setEntities(entities: Entity[]) {
+    this.entities = entities;
+  }
+
+  pick() { return null; }
+
+  render(worldW: number, worldH: number) {
+    if (this.needsTerrainRebuild) this.buildTerrain(worldW, worldH);
+
+    // Update camera
+    if (this.mode === "isometric") {
+      // Isometric view: 45 deg Y rot, 35.264 X rot ( atan(1/sqrt(2)) )
+      const radius = 200; // fixed distance for orthographic
+      // Actually, for ortho, position just sets direction.
+      // Isometric standard: 
+      this.orthoCamera.position.set(200, 200, 200);
+      this.orthoCamera.lookAt(0, 0, 0);
+      this.resize(this.renderer.domElement.width, this.renderer.domElement.height); // update ortho frustum based on zoom (orbit.distance)
+    } else if (this.mode === "3d") {
+      const r = this.orbit.distance;
+      const x = r * Math.sin(this.orbit.polar) * Math.sin(this.orbit.azimuth);
+      const y = r * Math.cos(this.orbit.polar);
+      const z = r * Math.sin(this.orbit.polar) * Math.cos(this.orbit.azimuth);
+      this.camera.position.set(x, y, z);
+      this.camera.lookAt(0, 0, 0);
+    }
+
+    // Update entities
+    if (this.mode === "isometric") {
+      // Render as sprites (simplified)
+      // Hide 3D Rigs
+      this.rigs.forEach(r => r.group.visible = false);
+
+      this.entities.forEach(e => {
+        let sprite = this.isoSprites.get(e.id);
+        if (!sprite) {
+          // Use simple colored sprites for now
+          const mat = new THREE.SpriteMaterial({ color: colorFrom(e.color) });
+          sprite = new THREE.Sprite(mat);
+          sprite.scale.set(4, 4, 1);
+          this.isoEntities.add(sprite);
+          this.isoSprites.set(e.id, sprite);
+        }
+        sprite.position.set(e.x - worldW / 2, e.z + 2, e.y - worldH / 2);
+        sprite.visible = true;
+      });
+
+    } else {
+      // 3D Rigs (placeholder - user wants iso mostly)
+    }
+
+    this.renderer.render(this.scene, this.activeCamera);
+  }
 }
