@@ -13,7 +13,7 @@ from engine.backend import gpu_available
 
 logger = logging.getLogger("mythos")
 
-app = FastAPI(title="Mythos Engine")
+app = FastAPI(title="Aethergrid")
 service = SimulationService()
 
 app.add_middleware(

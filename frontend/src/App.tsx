@@ -108,7 +108,7 @@ export default function App() {
   const [backend, setBackend] = useState("cpu");
   const [gpuAvailable, setGpuAvailable] = useState(false);
   const [backendReady, setBackendReady] = useState(false);
-  const [mode, setMode] = useState<"2d" | "3d">("3d");
+  const [mode, setMode] = useState<"2d" | "3d" | "isometric">("isometric");
   const [assetStyle, setAssetStyle] = useState<"assets" | "procedural">("assets");
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
@@ -382,9 +382,9 @@ export default function App() {
     <div className="app-shell">
       <header className="topbar">
         <div>
-          <div className="eyebrow">Mythos Engine</div>
+          <div className="eyebrow">Aethergrid</div>
           <h1>Worldforge Dashboard</h1>
-          <div className="subtle">Realtime simulation, procedural ecology, cinematic 3D rendering.</div>
+          <div className="subtle">Realtime simulation, procedural ecology, pixel-isometric rendering.</div>
         </div>
         <div className="topbar-actions">
           <div className={`status-pill ${backendReady ? "ok" : "warn"}`}>
@@ -512,6 +512,9 @@ export default function App() {
             <h3>Renderer</h3>
             <label>View mode</label>
             <div className="toggle-row">
+              <button className={mode === "isometric" ? "active" : "secondary"} onClick={() => setMode("isometric")}>
+                Px-Iso
+              </button>
               <button className={mode === "3d" ? "active" : "secondary"} onClick={() => setMode("3d")}>
                 Cinematic 3D
               </button>

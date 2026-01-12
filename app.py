@@ -11,7 +11,7 @@ from engine.render import render_view, color_rgb
 from engine.sim import Simulation
 from engine.worldpack import load_worldpack_json, worldpack_to_dsl, WorldPack
 
-st.set_page_config(page_title="MYTHOS — Reality Compiler", layout="wide")
+st.set_page_config(page_title="Aethergrid — Reality Compiler", layout="wide")
 
 ROOT = Path(__file__).resolve().parent
 EXAMPLES = sorted((ROOT / "examples").glob("*.law"))
@@ -57,7 +57,7 @@ if "spawn_profiles" not in st.session_state:
 if "active_pack_name" not in st.session_state:
     st.session_state.active_pack_name = None
 
-st.title("MYTHOS — Reality Compiler")
+st.title("Aethergrid — Reality Compiler")
 st.caption("Write laws. Compile worlds. Observe emergence. Patch paradoxes.")
 
 left, right = st.columns([0.9, 1.1], gap="large")
@@ -217,10 +217,10 @@ with left:
     st.download_button(
         "Download laws as .law",
         data=st.session_state.src.encode("utf-8"),
-        file_name="mythos_world.law",
+        file_name="aethergrid_world.law",
         mime="text/plain",
     )
-    with st.expander("How to use Mythos", expanded=True):
+    with st.expander("How to use Aethergrid", expanded=True):
         st.markdown(
             "\n".join(
                 [
@@ -523,20 +523,20 @@ with right:
                 st.download_button(
                     "Download metrics (CSV)",
                     data="\n".join(csv_lines),
-                    file_name="mythos_metrics.csv",
+                    file_name="aethergrid_metrics.csv",
                     mime="text/csv",
                 )
             if sim.snapshots:
                 st.download_button(
                     "Download snapshot history (JSONL)",
                     data=sim.snapshots_jsonl(),
-                    file_name="mythos_snapshots.jsonl",
+                    file_name="aethergrid_snapshots.jsonl",
                     mime="application/jsonl",
                 )
             st.download_button(
                 "Download snapshot (JSON)",
                 data=sim.snapshot_json(max_entities=500),
-                file_name="mythos_snapshot.json",
+                file_name="aethergrid_snapshot.json",
                 mime="application/json",
             )
             st.json(snap, expanded=False)

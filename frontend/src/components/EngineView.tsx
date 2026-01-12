@@ -22,7 +22,7 @@ type FieldPayload = {
 };
 
 type Props = {
-  mode: "2d" | "3d";
+  mode: "2d" | "3d" | "isometric";
   apiBase?: string;
   initialFrame?: FramePayload | null;
   onFrame?: (payload: FramePayload) => void;
