@@ -371,39 +371,52 @@ export class Renderer {
 
 
   private buildIsometricTerrain(worldW: number, worldH: number) {
-    // Just do a simple InstancedMesh for now.
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    geometry.translate(0, 0.5, 0); // anchor bottom
+    if (worldW < 2 || worldH < 2) return; // Wait for real data
 
-    // Material with atlas
-    // For simplicity, we use color for now OR UV map.
-    // Let's use 3 materials for 3 InstancedMeshes (Grass, Water, Stone)
-    // Use vibrant solid colors for the isometric blocks (Texture mapping requires UV adjustment)
-    const matGrass = new THREE.MeshStandardMaterial({ color: 0x5ba860, roughness: 0.8 });
-    const matWater = new THREE.MeshStandardMaterial({ color: 0x4fa4b8, transparent: true, opacity: 0.7, roughness: 0.1 });
-    const matStone = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.9 });
+    const step = 2;
+    const cols = Math.ceil(worldW / step);
+    const rows = Math.ceil(worldH / step);
+    const count = cols * rows;
 
-    // Grid step
-    const step = 2; // block size in world units
-    const count = (worldW / step) * (worldH / step);
+    // 1. Geometry
+    const geometry = new THREE.BoxGeometry(step, step, step); // Scale geometry directly to step size
+    geometry.translate(0, step / 2, 0); // Pivot at bottom
 
-    const mesh = new THREE.InstancedMesh(geometry, matGrass, count);
-    mesh.castShadow = true; mesh.receiveShadow = true;
+    // 2. Material (Vibrant Green Voxel)
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x5ba860,
+      roughness: 0.8,
+      flatShading: true
+    });
+
+    // 3. Mesh
+    const mesh = new THREE.InstancedMesh(geometry, material, count);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
 
     const dummy = new THREE.Object3D();
+    const halfW = (cols * step) / 2;
+    const halfH = (rows * step) / 2;
     let idx = 0;
-    for (let x = 0; x < worldW; x += step) {
-      for (let z = 0; z < worldH; z += step) {
-        const h = fbm(x, z, 3); // -1 to 1
-        const y = Math.floor((h + 1) * 3) * step; // stepped height
-        dummy.position.set(x - worldW / 2, y, z - worldH / 2);
-        dummy.scale.set(step, step, step); // cube size matched to grid
+
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        const x = i * step;
+        const z = j * step;
+
+        // Height noise
+        const h = fbm(x * 0.1, z * 0.1, 2); // adjusted scale
+        const y = Math.floor((h + 1) * 2) * step;
+
+        dummy.position.set(x - halfW, y, z - halfH);
         dummy.updateMatrix();
         mesh.setMatrixAt(idx++, dummy.matrix);
       }
     }
+
     mesh.instanceMatrix.needsUpdate = true;
     this.isoTiles.add(mesh);
+    this.needsTerrainRebuild = false;
   }
 
   private bindControls(canvas: HTMLCanvasElement) {
