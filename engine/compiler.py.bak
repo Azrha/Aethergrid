@@ -1,0 +1,74 @@
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import Dict, List, Any
+from lark import Lark, Transformer
+from .laws import Law, Action
+from .safeexpr import compile_expr
+
+GRAMMAR_PATH = __file__.replace("compiler.py", "grammar.lark")
+
+class _AST(Transformer):
+    def start(self, items):
+        consts = {}
+        laws = []
+        for it in items:
+            if it is None:
+                continue
+            if isinstance(it, tuple) and it[0] == "const":
+                consts[it[1]] = it[2]
+            elif isinstance(it, Law):
+                laws.append(it)
+        return {"consts": consts, "laws": laws}
+
+    def const_stmt(self, items):
+        name = str(items[0])
+        expr_src = str(items[1])
+        return ("const", name, compile_expr(expr_src))
+
+    def law_stmt(self, items):
+        name = str(items[0])
+        prio = int(float(items[1]))
+        when_src = str(items[2])
+        actions = items[3]
+        return Law(name=name, priority=prio, when=compile_expr(when_src), actions=actions)
+
+    def action_list(self, items):
+        return items
+
+    def assign(self, items):
+        var = str(items[0])
+        op = str(items[1])  # ASSIGN_OP token
+        expr_src = str(items[2])
+        return Action(kind="assign", name=var, op=op, expr=compile_expr(expr_src))
+
+    def call(self, items):
+        fname = str(items[0])
+        args = []
+        if len(items) > 1 and items[1] is not None:
+            args = items[1]
+        return Action(kind="call", name=fname, args=args)
+
+    def args(self, items):
+        return [compile_expr(str(x)) for x in items]
+
+    def var(self, items): return str(items[0])
+    def number(self, items): return str(items[0])
+    def string(self, items): return str(items[0])
+    def true(self, _): return "true"
+    def false(self, _): return "false"
+
+def _load_grammar() -> str:
+    with open(GRAMMAR_PATH, "r", encoding="utf-8") as f:
+        return f.read()
+
+_PARSER = Lark(_load_grammar(), parser="lalr", maybe_placeholders=False, propagate_positions=True)
+
+@dataclass
+class CompiledProgram:
+    consts: Dict[str, Any]
+    laws: List[Law]
+
+def compile_program(src: str) -> CompiledProgram:
+    tree = _PARSER.parse(src + "\n")
+    ast = _AST().transform(tree)
+    return CompiledProgram(consts=ast["consts"], laws=ast["laws"])

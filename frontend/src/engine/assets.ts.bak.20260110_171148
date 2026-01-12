@@ -1,0 +1,118 @@
+export type AssetStyle = "assets" | "procedural";
+
+export type AssetSpec = {
+  url: string;
+  scale: number;
+  yOffset?: number;
+  rotateY?: number;
+  tint?: string;
+  emissive?: string;
+  roughness?: number;
+  metalness?: number;
+  // [Mythos] asset normalization fields
+  targetHeight?: number;
+  heightRange?: [number, number];
+  targetExtent?: number;
+  extentRange?: [number, number];
+
+};
+
+export type AssetSet = Record<string, AssetSpec>;
+
+const BASE_ASSETS: AssetSet = {
+  settler: { url: "/assets/models/external/neil_armstrong.glb", scale: 0.9, targetHeight: 1.7, heightRange: [1.5, 1.9], },
+  tribe: { url: "/assets/models/external/soldier.glb", scale: 0.9, targetHeight: 1.7, heightRange: [1.5, 1.9], },
+  pilot: { url: "/assets/models/external/astronaut.glb", scale: 0.9, targetHeight: 1.7, heightRange: [1.5, 1.9], },
+  fae: { url: "/assets/models/external/astronaut.glb", scale: 0.85, targetHeight: 1.7, heightRange: [1.5, 1.9], },
+  fauna: { url: "/assets/models/external/horse.glb", scale: 0.7, targetHeight: 1.6, heightRange: [1.3, 2.0], },
+  beast: { url: "/assets/models/external/horse.glb", scale: 0.75, targetHeight: 1.6, heightRange: [1.3, 2.0], },
+  outsider: { url: "/assets/models/generated/alien.glb", scale: 0.9, targetHeight: 1.9, heightRange: [1.6, 2.5], },
+  voidborn: { url: "/assets/models/generated/alien.glb", scale: 0.95, targetHeight: 1.9, heightRange: [1.6, 2.5], },
+  synth: { url: "/assets/models/external/robot_expressive.glb", scale: 0.8, targetHeight: 1.7, heightRange: [1.3, 2.3], },
+  habitat: { url: "/assets/models/generated/habitat.glb", scale: 1.0, targetHeight: 3.0, heightRange: [2.0, 6.0], },
+  obelisk: { url: "/assets/models/generated/obelisk.glb", scale: 1.1, targetHeight: 5.0, heightRange: [3.0, 12.0], },
+  station: { url: "/assets/models/external/rocket_ship.glb", scale: 1.4, rotateY: Math.PI, targetExtent: 10.0, extentRange: [5.0, 25.0], },
+  grove: { url: "/assets/models/generated/tree.glb", scale: 1.1, targetHeight: 6.0, heightRange: [3.0, 15.0], },
+  cycad: { url: "/assets/models/generated/cycad.glb", scale: 1.1, targetHeight: 4.0, heightRange: [2.0, 10.0], },
+  saurian: { url: "/assets/models/generated/dino.glb", scale: 1.05, targetExtent: 6.0, extentRange: [4.0, 10.0], },
+  raptor: { url: "/assets/models/generated/dino.glb", scale: 0.85, targetExtent: 4.0, extentRange: [2.5, 6.0], },
+  wyrm: { url: "/assets/models/generated/dino.glb", scale: 1.2, targetExtent: 8.0, extentRange: [5.0, 15.0], },
+};
+
+export const ASSET_SETS: Record<string, AssetSet> = {
+  living: {
+    ...BASE_ASSETS,
+    settler: { ...BASE_ASSETS.settler, tint: "#d8c2a5" },
+    fauna: { ...BASE_ASSETS.fauna, tint: "#5e8b5a" },
+    outsider: { ...BASE_ASSETS.outsider, tint: "#6ad4c5", emissive: "#6ad4c5" },
+    habitat: { ...BASE_ASSETS.habitat, tint: "#c2b3a3" },
+    grove: { ...BASE_ASSETS.grove, tint: "#4c7f56" },
+  },
+  fantasy: {
+    ...BASE_ASSETS,
+    fae: { ...BASE_ASSETS.fae, tint: "#c9a6ff", emissive: "#c9a6ff" },
+    beast: { ...BASE_ASSETS.beast, tint: "#9ed37a" },
+    obelisk: { ...BASE_ASSETS.obelisk, tint: "#c6a8ff", emissive: "#c6a8ff", metalness: 0.3 },
+    wyrm: { ...BASE_ASSETS.wyrm, tint: "#a67cff", emissive: "#7b5aff" },
+    grove: { ...BASE_ASSETS.grove, tint: "#3d6f50" },
+  },
+  dino: {
+    ...BASE_ASSETS,
+    tribe: { ...BASE_ASSETS.tribe, tint: "#c49a6c" },
+    saurian: { ...BASE_ASSETS.saurian, tint: "#6f9c62" },
+    raptor: { ...BASE_ASSETS.raptor, tint: "#9bbd5a" },
+    cycad: { ...BASE_ASSETS.cycad, tint: "#6b8f4f" },
+  },
+  space: {
+    ...BASE_ASSETS,
+    pilot: { ...BASE_ASSETS.pilot, tint: "#a8cfff" },
+    voidborn: { ...BASE_ASSETS.voidborn, tint: "#8aa0ff", emissive: "#8aa0ff" },
+    synth: { ...BASE_ASSETS.synth, tint: "#b8c2d8", metalness: 0.7 },
+    station: { ...BASE_ASSETS.station, tint: "#7d8ca8", metalness: 0.6 },
+  },
+  oceanic: {
+    ...BASE_ASSETS,
+    settler: { ...BASE_ASSETS.settler, tint: "#c7d4e2" },
+    fauna: { ...BASE_ASSETS.fauna, tint: "#4aa6a6" },
+    habitat: { ...BASE_ASSETS.habitat, tint: "#b0bccc" },
+    grove: { ...BASE_ASSETS.grove, tint: "#3f7f73" },
+  },
+  frostbound: {
+    ...BASE_ASSETS,
+    tribe: { ...BASE_ASSETS.tribe, tint: "#b9c6d6" },
+    beast: { ...BASE_ASSETS.beast, tint: "#c9d4de" },
+    obelisk: { ...BASE_ASSETS.obelisk, tint: "#cfe7ff", emissive: "#cfe7ff" },
+    grove: { ...BASE_ASSETS.grove, tint: "#6d8699" },
+  },
+  emberfall: {
+    ...BASE_ASSETS,
+    settler: { ...BASE_ASSETS.settler, tint: "#c58b5f" },
+    beast: { ...BASE_ASSETS.beast, tint: "#a95a42" },
+    habitat: { ...BASE_ASSETS.habitat, tint: "#b55b3f", emissive: "#ff7a3d" },
+    grove: { ...BASE_ASSETS.grove, tint: "#6b3f2f" },
+  },
+  skyborne: {
+    ...BASE_ASSETS,
+    settler: { ...BASE_ASSETS.settler, tint: "#cfe7ff" },
+    beast: { ...BASE_ASSETS.beast, tint: "#9ac7ff" },
+    obelisk: { ...BASE_ASSETS.obelisk, tint: "#cbe2ff", emissive: "#cbe2ff" },
+    grove: { ...BASE_ASSETS.grove, tint: "#6f9bb0" },
+  },
+  ironwild: {
+    ...BASE_ASSETS,
+    tribe: { ...BASE_ASSETS.tribe, tint: "#b6b0a7" },
+    synth: { ...BASE_ASSETS.synth, tint: "#9aa2ad", metalness: 0.75 },
+    outsider: { ...BASE_ASSETS.outsider, tint: "#7fd4ff" },
+    habitat: { ...BASE_ASSETS.habitat, tint: "#8a6b58", emissive: "#ff9450" },
+  },
+};
+
+export const ASSET_KIND_FALLBACK: Record<string, string> = {
+  humanoid: "settler",
+  animal: "fauna",
+  alien: "outsider",
+  machine: "synth",
+  building: "habitat",
+  tree: "grove",
+  dino: "saurian",
+};

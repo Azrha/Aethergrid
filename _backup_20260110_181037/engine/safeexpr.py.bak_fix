@@ -1,0 +1,94 @@
+from __future__ import annotations
+from dataclasses import dataclass
+import ast
+import math
+import random
+from typing import Any, Dict
+
+# Whitelisted functions allowed inside expressions (Call nodes)
+SAFE_FUNCS = {
+    "min","max","abs","round",
+    "clamp","lerp",
+    "sin","cos","tan","sqrt","log","exp",
+    "rand","randint",
+    "noise",
+}
+
+_ALLOWED_NODES = (
+    ast.Expression,
+    ast.BinOp, ast.UnaryOp,
+    ast.BoolOp, ast.Compare,
+    ast.Name, ast.Load,
+    ast.Constant,
+    ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod, ast.Pow,
+    ast.USub, ast.UAdd,
+    ast.And, ast.Or, ast.Not,
+    ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE,
+    ast.Tuple, ast.List,
+)
+
+def clamp(x, a, b):
+    return max(a, min(b, x))
+
+def lerp(a, b, t):
+    return a + (b - a) * t
+
+def rand():
+    return random.random()
+
+def randint(a, b):
+    return random.randint(int(a), int(b))
+
+def noise(x):
+    # simple deterministic-ish hash noise in [0,1)
+    return (abs(hash(float(x))) % 10_000_000) / 10_000_000.0
+
+SAFE_FUNC_IMPL = {
+    "min": min, "max": max, "abs": abs, "round": round,
+    "clamp": clamp, "lerp": lerp,
+    "sin": math.sin, "cos": math.cos, "tan": math.tan,
+    "sqrt": math.sqrt, "log": math.log, "exp": math.exp,
+    "rand": rand, "randint": randint,
+    "noise": noise,
+}
+
+@dataclass(frozen=True)
+class CompiledExpr:
+    """Validated expression wrapper."""
+    src: str
+
+def _validate(expr_src: str) -> str:
+    expr_src = (expr_src or "").strip()
+    if not expr_src:
+        expr_src = "0"
+
+    try:
+        tree = ast.parse(expr_src, mode="eval")
+    except SyntaxError as e:
+        raise ValueError(f"Invalid expression syntax: {e}") from e
+
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call):
+            # allow only NAME(...) calls
+            if not isinstance(n.func, ast.Name):
+                raise ValueError("Unsafe/unsupported expression node: Call")
+            fname = n.func.id
+            if fname not in SAFE_FUNCS:
+                raise ValueError(f"Unsafe/unsupported expression node: Call({fname})")
+            continue
+
+        if not isinstance(n, _ALLOWED_NODES):
+            raise ValueError(f"Unsafe/unsupported expression node: {type(n).__name__}")
+
+    return expr_src
+
+def compile_expr(expr_src: str) -> CompiledExpr:
+    return CompiledExpr(src=_validate(expr_src))
+
+def eval_expr(expr: CompiledExpr | str, env: Dict[str, Any]) -> Any:
+    """
+    Evaluate a validated expression with a locked-down global scope.
+    env = variables available in the expression.
+    """
+    src = expr.src if isinstance(expr, CompiledExpr) else _validate(expr)
+    return eval(src, {"__builtins__": {}, **SAFE_FUNC_IMPL}, dict(env or {}))

@@ -1,0 +1,64 @@
+# A grounded starting universe with gravity; drag; and bounce.
+
+const W = 320
+const H = 200
+const DT = 1.0
+const G = 0.18
+const MAX_SPEED = 5.0
+const SUBSTEPS = 2
+const DAY_CYCLE = 220
+const WEATHER_CYCLE = 320
+const SEASON_CYCLE = 520
+const TERRAIN_SEED = 5
+const TERRAIN_SCALE = 1.0
+const TERRAIN_SMOOTH = 5
+const WIND_X = 0.01
+const WIND_Y = 0.0
+
+# Gravity pulls everything downward
+law gravity priority 10
+  when true
+  do vy += G
+end
+
+# Air resistance keeps motion stable
+law air_drag priority 12
+  when true
+  do drag(0.015)
+end
+
+# Gentle wind adds drift
+law breeze priority 11
+  when true
+  do wind(1.0)
+end
+
+# Soft collisions to keep entities from stacking
+law collisions priority 18
+  when true
+  do collide(3.2; 0.86; 0.06)
+end
+
+# Bounce off walls with some energy loss
+law bounds priority 20
+  when true
+  do bounce(W; H; 0.82)
+end
+
+# Metal is attracted to red objects (simple magnetism)
+law red_magnetism priority 8
+  when color == "metal"
+  do attract(70; 0.55; color == "red")
+end
+
+# Sound can harden matter (local field)
+law sound_hardens priority 7
+  when sound > 0.3
+  do hardness += 0.08 * sound
+end
+
+# Anything too fast gets clamped
+law clamp priority 100
+  when true
+  do clamp_speed(MAX_SPEED)
+end

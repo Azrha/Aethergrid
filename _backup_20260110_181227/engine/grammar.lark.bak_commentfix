@@ -1,0 +1,26 @@
+%import common.CNAME -> NAME
+%import common.SIGNED_NUMBER -> NUMBER
+%import common.WS_INLINE
+%import common.NEWLINE -> _NL
+%ignore WS_INLINE
+
+EXPR: /[^,\n\)\}][^,\n\)\}]*/
+
+start: (_NL | stmt)*
+
+stmt: const_stmt _NL*
+    | law_stmt   _NL*
+
+const_stmt: "const" NAME "=" expr                     -> const_stmt
+law_stmt: "law" NAME "priority" NUMBER "when" expr "do" action_list  -> law_stmt
+
+action_list: action ("," action)*                     -> action_list
+action: assign | call
+
+assign: NAME ASSIGN_OP expr                           -> assign
+ASSIGN_OP: "="|"+="|"-="|"*="|"/="
+
+call: NAME "(" [args] ")"                             -> call
+args: expr ("," expr)*                                -> args
+
+expr: EXPR                                            -> expr

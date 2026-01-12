@@ -1,0 +1,19 @@
+%import common.CNAME -> NAME
+%import common.WS_INLINE
+%import common.NEWLINE -> _NL
+%ignore WS_INLINE
+%ignore _NL
+
+start: (stmt)*
+
+stmt: const_stmt
+    | law_stmt
+
+const_stmt: "const" NAME "=" /[^#\n]+/
+law_stmt: "law" NAME "priority" /[-0-9.]+/ "when" /[^#\n]+/ "do" action_block "end"
+
+// Actions are separated by semicolons
+action_block: raw_action (";" raw_action)*
+
+// We capture the raw action string and let Python AST parse it
+raw_action: /[^;\n#]+/

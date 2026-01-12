@@ -1,0 +1,34 @@
+%import common.CNAME -> NAME
+%import common.SIGNED_NUMBER -> NUMBER
+%import common.WS_INLINE
+%import common.NEWLINE -> _NL
+
+%ignore WS_INLINE
+
+// Comments (full-line or inline)
+COMMENT: /#[^\n]*/
+%ignore COMMENT
+
+start: (_NL | stmt)*
+
+stmt: const_stmt _NL*
+    | law_stmt _NL*
+
+const_stmt: "const" NAME "=" LINE_EXPR
+
+law_stmt: "law" NAME "priority" NUMBER _NL* "when" LINE_EXPR "do" _NL action_line+ "end"
+
+action_line: assign _NL
+           | call   _NL
+
+assign: NAME ASSIGN_OP LINE_EXPR
+ASSIGN_OP: "+=" | "-=" | "*=" | "/=" | "="
+
+call: NAME "(" [args] ")"
+args: ARG_EXPR ("," ARG_EXPR)*
+
+// Raw expression text until end-of-line (for const/when/assign RHS)
+LINE_EXPR: /[^\n]+/
+
+// Raw argument expression text until ',' or ')'
+ARG_EXPR: /[^,\n\)]+/

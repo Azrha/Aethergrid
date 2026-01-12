@@ -1,0 +1,131 @@
+{
+  "name": "Dinosaur Era",
+  "description": "Predators, herds, and early settlements.",
+  "seed": 101,
+  "consts": {
+    "W": 340,
+    "H": 220,
+    "DT": 1.0,
+    "G": 0.2,
+    "MAX_SPEED": 4.8,
+    "SUBSTEPS": 2,
+    "DAY_CYCLE": 240,
+    "WEATHER_CYCLE": 300,
+    "SEASON_CYCLE": 480,
+    "TERRAIN_SEED": 27,
+    "TERRAIN_SCALE": 1.3,
+    "TERRAIN_SMOOTH": 6,
+    "WIND_X": 0.015,
+    "WIND_Y": 0.0
+  },
+  "profiles": [
+    {
+      "name": "Tribes",
+      "color": "tribe",
+      "count": 34,
+      "mass_range": [0.9, 1.3],
+      "hardness_range": [0.7, 1.1],
+      "speed_range": [-0.7, 0.7],
+      "depth_range": [0.2, 0.9],
+      "energy_range": [0.7, 1.5]
+    },
+    {
+      "name": "Saurians",
+      "color": "saurian",
+      "count": 46,
+      "mass_range": [1.8, 3.4],
+      "hardness_range": [1.0, 2.0],
+      "speed_range": [-0.55, 0.55],
+      "depth_range": [0.3, 1.0],
+      "energy_range": [0.8, 1.6]
+    },
+    {
+      "name": "Raptors",
+      "color": "raptor",
+      "count": 28,
+      "mass_range": [1.1, 2.0],
+      "hardness_range": [0.8, 1.4],
+      "speed_range": [-0.8, 0.8],
+      "depth_range": [0.3, 1.1],
+      "energy_range": [0.7, 1.5]
+    },
+    {
+      "name": "Cycads",
+      "color": "cycad",
+      "count": 36,
+      "mass_range": [2.2, 4.4],
+      "hardness_range": [2.2, 3.8],
+      "speed_range": [0.0, 0.0],
+      "depth_range": [0.0, 0.2],
+      "static": true
+    }
+  ],
+  "laws": [
+    {
+      "name": "gravity",
+      "priority": 10,
+      "when": "true",
+      "actions": ["vy += G"]
+    },
+    {
+      "name": "herd_motion",
+      "priority": 9,
+      "when": "color == \"saurian\"",
+      "actions": ["wander(0.05)", "cohere(20, 0.07, color == \"saurian\")", "align(20, 0.06, color == \"saurian\")", "separate(8, 0.1, color == \"saurian\")", "emit_sound(0.35 * rand())"]
+    },
+    {
+      "name": "raptor_pack",
+      "priority": 8,
+      "when": "color == \"raptor\"",
+      "actions": ["wander(0.06)", "cohere(16, 0.08, color == \"raptor\")", "align(16, 0.07, color == \"raptor\")", "separate(7, 0.1, color == \"raptor\")"]
+    },
+    {
+      "name": "tribe_avoidance",
+      "priority": 8,
+      "when": "color == \"tribe\"",
+      "actions": ["vx += 0.04 * (x - W/2)", "vy += 0.03 * (y - H/2)", "avoid(W/2, H/2, 0.02)"]
+    },
+    {
+      "name": "cycad_nutrients",
+      "priority": 6,
+      "when": "color == \"cycad\"",
+      "actions": ["emit_food(0.12 + fertility * 0.18)", "emit_water(0.08 + rain * 0.12)"]
+    },
+    {
+      "name": "feeding_saurians",
+      "priority": 5,
+      "when": "color == \"saurian\"",
+      "actions": ["consume_food(0.07, 1.25)", "consume_water(0.05, 0.7)", "metabolize(0.005)"]
+    },
+    {
+      "name": "feeding_tribes",
+      "priority": 5,
+      "when": "color == \"tribe\"",
+      "actions": ["consume_food(0.05, 1.1)", "consume_water(0.04, 0.6)", "metabolize(0.004)"]
+    },
+    {
+      "name": "drag",
+      "priority": 12,
+      "when": "true",
+      "actions": ["drag(0.018)"]
+    },
+    {
+      "name": "collisions",
+      "priority": 20,
+      "when": "true",
+      "actions": ["collide(3.6, 0.76, 0.14)"]
+    },
+    {
+      "name": "bounds",
+      "priority": 30,
+      "when": "true",
+      "actions": ["bounce(W, H, 0.8)"]
+    },
+    {
+      "name": "clamp",
+      "priority": 100,
+      "when": "true",
+      "actions": ["clamp_speed(MAX_SPEED)"]
+    }
+  ]
+}

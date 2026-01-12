@@ -1,0 +1,104 @@
+{
+  "name": "Oceanic Realm",
+  "description": "Archipelagos, tide-bound life, and migration through blue currents.",
+  "seed": 144,
+  "consts": {
+    "W": 380,
+    "H": 240,
+    "DT": 1.0,
+    "G": 0.12,
+    "MAX_SPEED": 4.6,
+    "SUBSTEPS": 2,
+    "DAY_CYCLE": 260,
+    "WEATHER_CYCLE": 420,
+    "SEASON_CYCLE": 600,
+    "TERRAIN_SEED": 33,
+    "TERRAIN_SCALE": 0.8,
+    "TERRAIN_SMOOTH": 6,
+    "WIND_X": 0.012,
+    "WIND_Y": -0.004
+  },
+  "profiles": [
+    {
+      "name": "Seafarers",
+      "color": "settler",
+      "count": 70,
+      "mass_range": [0.8, 1.2],
+      "hardness_range": [0.6, 1.1],
+      "speed_range": [-0.7, 0.7],
+      "depth_range": [0.3, 1.0],
+      "energy_range": [0.7, 1.4],
+      "wealth_range": [0.3, 1.2]
+    },
+    {
+      "name": "Reefkin",
+      "color": "fauna",
+      "count": 90,
+      "mass_range": [0.9, 1.6],
+      "hardness_range": [0.6, 1.2],
+      "speed_range": [-0.6, 0.6],
+      "depth_range": [0.4, 1.1],
+      "energy_range": [0.6, 1.4]
+    },
+    {
+      "name": "Harbors",
+      "color": "habitat",
+      "count": 26,
+      "mass_range": [2.8, 5.2],
+      "hardness_range": [1.8, 3.6],
+      "speed_range": [0.0, 0.0],
+      "depth_range": [0.0, 0.2],
+      "static": true
+    },
+    {
+      "name": "Mangroves",
+      "color": "grove",
+      "count": 42,
+      "mass_range": [2.0, 3.6],
+      "hardness_range": [2.0, 3.2],
+      "speed_range": [0.0, 0.0],
+      "depth_range": [0.0, 0.2],
+      "static": true
+    }
+  ],
+  "laws": [
+    { "name": "gravity", "priority": 10, "when": "true", "actions": ["vy += G"] },
+    { "name": "sea_drag", "priority": 12, "when": "true", "actions": ["drag(0.016)"] },
+    {
+      "name": "reef_schooling",
+      "priority": 9,
+      "when": "color == \"fauna\"",
+      "actions": [
+        "wander(0.05)",
+        "cohere(18, 0.06, color == \"fauna\")",
+        "align(18, 0.06, color == \"fauna\")",
+        "separate(8, 0.08, color == \"fauna\")"
+      ]
+    },
+    {
+      "name": "port_routes",
+      "priority": 8,
+      "when": "color == \"settler\"",
+      "actions": [
+        "seek(W/2, H/2, 0.015)",
+        "follow_road(0.05)",
+        "seek_market(0.03)",
+        "trade(0.03)"
+      ]
+    },
+    {
+      "name": "tidal_food",
+      "priority": 6,
+      "when": "color == \"grove\" or color == \"habitat\"",
+      "actions": ["emit_food(0.12 + water * 0.2 + rain * 0.1)", "emit_water(0.12 + rain * 0.2)"]
+    },
+    {
+      "name": "feeding",
+      "priority": 5,
+      "when": "color == \"fauna\" or color == \"settler\"",
+      "actions": ["consume_food(0.05, 1.1)", "consume_water(0.04, 0.7)", "metabolize(0.004)"]
+    },
+    { "name": "bounds", "priority": 30, "when": "true", "actions": ["bounce(W, H, 0.84)"] },
+    { "name": "clamp", "priority": 100, "when": "true", "actions": ["clamp_speed(MAX_SPEED)"] }
+  ]
+}

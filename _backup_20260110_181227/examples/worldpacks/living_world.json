@@ -1,0 +1,192 @@
+{
+  "name": "Living World",
+  "description": "Settlements, wildlife, and social motion with day/night rhythms.",
+  "seed": 42,
+  "consts": {
+    "W": 360,
+    "H": 220,
+    "DT": 1.0,
+    "G": 0.18,
+    "MAX_SPEED": 5.0,
+    "SUBSTEPS": 2,
+    "DAY_CYCLE": 220,
+    "WEATHER_CYCLE": 320,
+    "SEASON_CYCLE": 520,
+    "TERRAIN_SEED": 7,
+    "TERRAIN_SCALE": 1.0,
+    "TERRAIN_SMOOTH": 5,
+    "WIND_X": 0.01,
+    "WIND_Y": 0.0
+  },
+  "profiles": [
+    {
+      "name": "Settlers",
+      "color": "settler",
+      "count": 90,
+      "mass_range": [0.8, 1.2],
+      "hardness_range": [0.6, 1.1],
+      "speed_range": [-0.7, 0.7],
+      "depth_range": [0.2, 0.8],
+      "energy_range": [0.6, 1.4],
+      "wealth_range": [0.2, 1.0]
+    },
+    {
+      "name": "Wildlife",
+      "color": "fauna",
+      "count": 80,
+      "mass_range": [0.9, 1.6],
+      "hardness_range": [0.7, 1.4],
+      "speed_range": [-0.6, 0.6],
+      "depth_range": [0.2, 0.8],
+      "energy_range": [0.6, 1.4]
+    },
+    {
+      "name": "Wayfarers",
+      "color": "outsider",
+      "count": 30,
+      "mass_range": [1.0, 1.8],
+      "hardness_range": [0.8, 1.6],
+      "speed_range": [-0.5, 0.5],
+      "depth_range": [0.3, 1.0],
+      "energy_range": [0.8, 1.6]
+    },
+    {
+      "name": "Homesteads",
+      "color": "habitat",
+      "count": 24,
+      "mass_range": [3.0, 6.0],
+      "hardness_range": [2.0, 4.0],
+      "speed_range": [0.0, 0.0],
+      "depth_range": [0.0, 0.2],
+      "static": true
+    },
+    {
+      "name": "Groves",
+      "color": "grove",
+      "count": 36,
+      "mass_range": [2.0, 4.0],
+      "hardness_range": [2.0, 3.5],
+      "speed_range": [0.0, 0.0],
+      "depth_range": [0.0, 0.2],
+      "static": true
+    }
+  ],
+  "laws": [
+    {
+      "name": "gravity",
+      "priority": 10,
+      "when": "true",
+      "actions": ["vy += G"]
+    },
+    {
+      "name": "air_drag",
+      "priority": 12,
+      "when": "true",
+      "actions": ["drag(0.015)"]
+    },
+    {
+      "name": "soft_collisions",
+      "priority": 18,
+      "when": "true",
+      "actions": ["collide(3.2, 0.86, 0.06)"]
+    },
+    {
+      "name": "animal_wander",
+      "priority": 9,
+      "when": "color == \"fauna\"",
+      "actions": [
+        "wander(0.06)",
+        "cohere(18, 0.05, color == \"fauna\")",
+        "align(18, 0.06, color == \"fauna\")",
+        "separate(8, 0.08, color == \"fauna\")",
+        "avoid(W/2, H/2, 0.01)"
+      ]
+    },
+    {
+      "name": "human_settlement",
+      "priority": 8,
+      "when": "color == \"settler\"",
+      "actions": [
+        "cohere(22, 0.05, color == \"settler\")",
+        "align(22, 0.05, color == \"settler\")",
+        "seek(W/2, H/2, 0.02)",
+        "attract(40, 0.3, color == \"habitat\")",
+        "follow_road(0.04)",
+        "seek_home(0.03)",
+        "seek_market(0.02)",
+        "trade(0.02)"
+      ]
+    },
+    {
+      "name": "alien_patterns",
+      "priority": 7,
+      "when": "color == \"outsider\"",
+      "actions": [
+        "wander(0.05)",
+        "cohere(26, 0.06, color == \"outsider\")",
+        "separate(10, 0.09, color == \"outsider\")",
+        "attract(60, 0.2, color == \"settler\")"
+      ]
+    },
+    {
+      "name": "ambient_sound",
+      "priority": 6,
+      "when": "color == \"fauna\" or color == \"settler\"",
+      "actions": ["emit_sound(0.35 * rand())"]
+    },
+    {
+      "name": "food_sources",
+      "priority": 5,
+      "when": "color == \"grove\" or color == \"habitat\"",
+      "actions": ["emit_food(0.15 + fertility * 0.2 + season * 0.1)", "emit_water(0.1 + rain * 0.15)"]
+    },
+    {
+      "name": "settlements",
+      "priority": 5,
+      "when": "color == \"habitat\"",
+      "actions": ["emit_settlement(0.2)", "emit_road(0.15)", "emit_home(0.12)", "emit_market(0.08)"]
+    },
+    {
+      "name": "farms",
+      "priority": 5,
+      "when": "color == \"grove\"",
+      "actions": ["emit_farm(0.1)"]
+    },
+    {
+      "name": "feeding_animals",
+      "priority": 4,
+      "when": "color == \"fauna\"",
+      "actions": ["consume_food(0.06, 1.2)", "consume_water(0.04, 0.6)", "metabolize(0.004)"]
+    },
+    {
+      "name": "feeding_humans",
+      "priority": 4,
+      "when": "color == \"settler\"",
+      "actions": ["consume_food(0.05, 1.1)", "consume_water(0.03, 0.5)", "metabolize(0.004)"]
+    },
+    {
+      "name": "survival",
+      "priority": 3,
+      "when": "energy < 0.2",
+      "actions": ["alive = false"]
+    },
+    {
+      "name": "seasonal_growth",
+      "priority": 2,
+      "when": "season > 0.5",
+      "actions": ["emit_food(0.1 * season)"]
+    },
+    {
+      "name": "bounds",
+      "priority": 20,
+      "when": "true",
+      "actions": ["bounce(W, H, 0.82)"]
+    },
+    {
+      "name": "clamp",
+      "priority": 100,
+      "when": "true",
+      "actions": ["clamp_speed(MAX_SPEED)"]
+    }
+  ]
+}

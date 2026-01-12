@@ -1,0 +1,54 @@
+from __future__ import annotations
+import ast
+
+# Whitelisted functions allowed inside expressions (Call nodes)
+SAFE_FUNCS = {
+    "min","max","abs","round",
+    "clamp","lerp",
+    "sin","cos","tan","sqrt","log","exp",
+    "rand","randint",
+    "noise",
+}
+
+_ALLOWED_NODES = (
+    ast.Expression,
+    ast.BinOp, ast.UnaryOp,
+    ast.BoolOp, ast.Compare,
+    ast.Name, ast.Load,
+    ast.Constant,
+    ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod, ast.Pow,
+    ast.USub, ast.UAdd,
+    ast.And, ast.Or, ast.Not,
+    ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE,
+    ast.Tuple, ast.List,
+)
+
+def compile_expr(expr_src: str) -> str:
+    """
+    Validate expression is safe and return it as a string.
+    Allows arithmetic/boolean/comparisons and whitelisted function calls like:
+      clamp(x,0,1), sin(x), rand(), noise(t)
+    """
+    expr_src = (expr_src or "").strip()
+    if not expr_src:
+        return "0"
+
+    try:
+        tree = ast.parse(expr_src, mode="eval")
+    except SyntaxError as e:
+        raise ValueError(f"Invalid expression syntax: {e}") from e
+
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call):
+            # allow only NAME(...) calls
+            if not isinstance(n.func, ast.Name):
+                raise ValueError("Unsafe/unsupported expression node: Call")
+            fname = n.func.id
+            if fname not in SAFE_FUNCS:
+                raise ValueError(f"Unsafe/unsupported expression node: Call({fname})")
+            continue
+
+        if not isinstance(n, _ALLOWED_NODES):
+            raise ValueError(f"Unsafe/unsupported expression node: {type(n).__name__}")
+
+    return expr_src

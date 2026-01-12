@@ -1,0 +1,37 @@
+# Intentional paradox/unhealthy loop:
+# Sound hardens AND softens at the same time. Watch paradox heatmap.
+const W = 256
+const H = 256
+const DT = 1.0
+const MAX_SPEED = 10.0
+const G = 0.08
+
+law gravity priority 10
+  when true
+  do vy += G
+end
+
+law sound_hardens priority 9
+  when sound > 0.2
+  do hardness += 0.12 * sound
+end
+
+law sound_softens priority 9
+  when sound > 0.2
+  do hardness -= 0.12 * sound
+end
+
+law generate_sound priority 8
+  when true
+  do emit_sound(0.10)
+end
+
+law clamp priority 100
+  when true
+  do clamp_speed(MAX_SPEED)
+end
+
+law wrap priority 1000
+  when true
+  do wrap(W; H)
+end

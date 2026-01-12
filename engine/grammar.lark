@@ -1,0 +1,38 @@
+%import common.CNAME -> NAME
+%import common.WS_INLINE
+%import common.NEWLINE -> _NL
+%ignore WS_INLINE
+%ignore _NL
+
+start: (stmt)*
+
+stmt: const_stmt
+    | law_stmt
+
+// Const statement
+const_stmt: "const" NAME "=" REST_OF_LINE
+
+// Law statement
+// explicit keywords allow us to strictly bound the regexes
+law_stmt: "law" NAME "priority" PRIO "when" CONDITION "do" action_block "end"
+
+action_block: raw_action (";" raw_action)*
+
+// Terminals
+// We prioritize explicit keywords "end" and "do" by defining them 
+// or using regex negative lookahead so generic text doesn't eat them.
+
+// Priority number
+PRIO: /[-0-9.]+/
+
+// Condition: everything until 'do' keyword
+// We use a negative lookahead to ensure we don't consume 'do'
+CONDITION: /(?!do\b)[^#\n]+/
+
+// Raw action: everything until ';' or 'end' keyword
+// We ensure we don't consume 'end'
+raw_action: /(?!end\b)[^;\n#]+/
+
+// Helper for consts
+REST_OF_LINE: /[^#\n]+/
+

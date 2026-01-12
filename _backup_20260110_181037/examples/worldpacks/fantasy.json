@@ -1,0 +1,113 @@
+{
+  "name": "Mythic Realms",
+  "description": "Floating islands, gentle magic, and living stone.",
+  "seed": 77,
+  "consts": {
+    "W": 320,
+    "H": 220,
+    "DT": 1.0,
+    "G": 0.09,
+    "MAX_SPEED": 4.3,
+    "SUBSTEPS": 2,
+    "DAY_CYCLE": 260,
+    "WEATHER_CYCLE": 360,
+    "SEASON_CYCLE": 540,
+    "TERRAIN_SEED": 19,
+    "TERRAIN_SCALE": 1.2,
+    "TERRAIN_SMOOTH": 4,
+    "WIND_X": 0.012,
+    "WIND_Y": 0.0
+  },
+  "profiles": [
+    {
+      "name": "Fae",
+      "color": "fae",
+      "count": 60,
+      "mass_range": [0.6, 1.0],
+      "hardness_range": [0.5, 0.9],
+      "speed_range": [-0.9, 0.9],
+      "depth_range": [0.3, 1.0],
+      "energy_range": [0.8, 1.6]
+    },
+    {
+      "name": "Beasts",
+      "color": "beast",
+      "count": 45,
+      "mass_range": [1.1, 1.7],
+      "hardness_range": [0.8, 1.5],
+      "speed_range": [-0.7, 0.7],
+      "depth_range": [0.2, 0.9],
+      "energy_range": [0.6, 1.4]
+    },
+    {
+      "name": "Obelisks",
+      "color": "obelisk",
+      "count": 18,
+      "mass_range": [3.5, 6.8],
+      "hardness_range": [2.4, 4.4],
+      "speed_range": [0.0, 0.0],
+      "depth_range": [0.0, 0.2],
+      "static": true
+    },
+    {
+      "name": "Wyrms",
+      "color": "wyrm",
+      "count": 16,
+      "mass_range": [1.8, 3.2],
+      "hardness_range": [1.1, 2.0],
+      "speed_range": [-0.5, 0.5],
+      "depth_range": [0.4, 1.4],
+      "energy_range": [0.7, 1.6]
+    }
+  ],
+  "laws": [
+    {
+      "name": "gravity",
+      "priority": 10,
+      "when": "true",
+      "actions": ["vy += G"]
+    },
+    {
+      "name": "magic_lift",
+      "priority": 12,
+      "when": "color == \"fae\" or color == \"obelisk\"",
+      "actions": ["vy -= 0.18 * (0.5 + rand())"]
+    },
+    {
+      "name": "wandering_beasts",
+      "priority": 9,
+      "when": "color == \"beast\"",
+      "actions": ["wander(0.05)", "cohere(18, 0.05, color == \"beast\")", "separate(8, 0.08, color == \"beast\")", "emit_sound(0.25 * rand())"]
+    },
+    {
+      "name": "wyrm_glide",
+      "priority": 8,
+      "when": "color == \"wyrm\"",
+      "actions": ["wander(0.04)", "cohere(26, 0.06, color == \"wyrm\")", "align(26, 0.05, color == \"wyrm\")", "emit_sound(0.3 * rand())"]
+    },
+    {
+      "name": "gentle_drag",
+      "priority": 11,
+      "when": "true",
+      "actions": ["drag(0.01)"]
+    },
+    {
+      "name": "soft_collisions",
+      "priority": 20,
+      "when": "true",
+      "actions": ["collide(3.1, 0.86, 0.06)"]
+    },
+    {
+      "name": "bounds",
+      "priority": 30,
+      "when": "true",
+      "actions": ["bounce(W, H, 0.9)"]
+    },
+    {
+      "name": "clamp",
+      "priority": 100,
+      "when": "true",
+      "actions": ["clamp_speed(MAX_SPEED)"]
+    }
+  ]
+}

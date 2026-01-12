@@ -1,0 +1,43 @@
+# Weird physics: red objects float, blue objects get heavier,
+# and unseen objects fade into gray before dying.
+
+const W = 256
+const H = 256
+const DT = 1.0
+const MAX_SPEED = 4.0
+const G = 0.16
+
+law gravity priority 10
+  when true
+  do vy += G
+end
+
+law red_buoyancy priority 12
+  when color == "red"
+  do vy -= 0.28
+end
+
+law blue_mass priority 9
+  when color == "blue"
+  do mass *= 1.003
+end
+
+law fade_to_gray priority 7
+  when seen < 0.5
+  do fade_color(0.02)
+end
+
+law unseen_decay priority 6
+  when true
+  do decay_unseen(0.012)
+end
+
+law clamp priority 100
+  when true
+  do clamp_speed(MAX_SPEED)
+end
+
+law wrap priority 1000
+  when true
+  do wrap(W, H)
+end

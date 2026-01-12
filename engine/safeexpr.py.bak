@@ -1,0 +1,38 @@
+import ast
+from dataclasses import dataclass
+from typing import Any, Dict
+
+ALLOWED_NODES = {
+    ast.Expression,
+    ast.BoolOp, ast.BinOp, ast.UnaryOp,
+    ast.Compare,
+    ast.Name, ast.Load,
+    ast.Constant,
+    ast.And, ast.Or,
+    ast.Add, ast.Sub, ast.Mult, ast.Div,
+    ast.UAdd, ast.USub,
+    ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE,
+}
+
+@dataclass(frozen=True)
+class CompiledExpr:
+    src: str
+    tree: ast.AST
+
+def _validate(node: ast.AST) -> None:
+    for n in ast.walk(node):
+        if type(n) not in ALLOWED_NODES:
+            raise ValueError(f"Unsafe/unsupported expression node: {type(n).__name__}")
+
+def compile_expr(src: str) -> CompiledExpr:
+    src = src.strip()
+    try:
+        tree = ast.parse(src, mode="eval")
+    except Exception as e:
+        raise ValueError(f"Invalid expression: {src} ({e})")
+    _validate(tree)
+    return CompiledExpr(src=src, tree=tree)
+
+def eval_expr(expr: CompiledExpr, env: Dict[str, Any]) -> Any:
+    code = compile(expr.tree, "<mythos-expr>", "eval")
+    return eval(code, {"__builtins__": {}}, env)

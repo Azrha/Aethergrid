@@ -1,0 +1,43 @@
+# A clean starting universe
+
+const W = 256
+const H = 256
+const DT = 1.0
+const G = 0.12
+const MAX_SPEED = 3.5
+
+# Everything experiences gravity
+law gravity priority 10
+  when true
+  do vy += G
+end
+
+# Metal is attracted to red objects (we treat color tags as strings)
+law red_magnetism priority 8
+  when color == "metal"
+  do attract(70; 0.55; color == "red")
+end
+
+# Things that aren't looked at slowly die
+law unobserved_decay priority 6
+  when true
+  do decay_unseen(0.015)
+end
+
+# Sound can harden matter (local field)
+law sound_hardens priority 7
+  when sound > 0.3
+  do hardness += 0.08 * sound
+end
+
+# Anything too fast gets clamped
+law clamp priority 100
+  when true
+  do clamp_speed(MAX_SPEED)
+end
+
+# Wrap world edges
+law wrap priority 1000
+  when true
+  do wrap(W; H)
+end

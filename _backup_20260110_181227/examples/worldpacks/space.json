@@ -1,0 +1,117 @@
+{
+  "name": "Deep Space",
+  "description": "Low gravity, orbiting swarms, and drifting structures.",
+  "seed": 88,
+  "consts": {
+    "W": 360,
+    "H": 240,
+    "DT": 1.0,
+    "MAX_SPEED": 5.6,
+    "SUBSTEPS": 2,
+    "DAY_CYCLE": 320,
+    "WEATHER_CYCLE": 0,
+    "SEASON_CYCLE": 0,
+    "TERRAIN_SEED": 31,
+    "TERRAIN_SCALE": 0.12,
+    "TERRAIN_SMOOTH": 2,
+    "WIND_X": 0.0,
+    "WIND_Y": 0.0
+  },
+  "profiles": [
+    {
+      "name": "Pilots",
+      "color": "pilot",
+      "count": 38,
+      "mass_range": [0.6, 1.0],
+      "hardness_range": [0.6, 1.0],
+      "speed_range": [-0.8, 0.8],
+      "depth_range": [0.4, 1.2],
+      "energy_range": [0.8, 1.6]
+    },
+    {
+      "name": "Voidborn",
+      "color": "voidborn",
+      "count": 44,
+      "mass_range": [0.8, 1.5],
+      "hardness_range": [0.7, 1.3],
+      "speed_range": [-0.7, 0.7],
+      "depth_range": [0.5, 1.5],
+      "energy_range": [0.9, 1.7]
+    },
+    {
+      "name": "Synths",
+      "color": "synth",
+      "count": 28,
+      "mass_range": [1.2, 2.0],
+      "hardness_range": [1.4, 2.4],
+      "speed_range": [-0.4, 0.4],
+      "depth_range": [0.2, 0.8]
+    },
+    {
+      "name": "Stations",
+      "color": "station",
+      "count": 14,
+      "mass_range": [3.0, 6.0],
+      "hardness_range": [2.0, 3.6],
+      "speed_range": [0.0, 0.0],
+      "depth_range": [0.0, 0.2],
+      "static": true
+    }
+  ],
+  "laws": [
+    {
+      "name": "center_pull",
+      "priority": 10,
+      "when": "true",
+      "actions": ["vx += (W/2 - x) * 0.0008", "vy += (H/2 - y) * 0.0008"]
+    },
+    {
+      "name": "micro_drift",
+      "priority": 9,
+      "when": "true",
+      "actions": ["vx += 0.018 * (rand() - 0.5)", "vy += 0.018 * (rand() - 0.5)"]
+    },
+    {
+      "name": "voidborn_flocks",
+      "priority": 8,
+      "when": "color == \"voidborn\"",
+      "actions": ["cohere(24, 0.06, color == \"voidborn\")", "align(24, 0.05, color == \"voidborn\")", "separate(10, 0.08, color == \"voidborn\")", "emit_sound(0.18 * rand())"]
+    },
+    {
+      "name": "pilot_orbits",
+      "priority": 7,
+      "when": "color == \"pilot\"",
+      "actions": ["seek(W/2, H/2, 0.02)", "attract(60, 0.2, color == \"station\")", "avoid(W/2, H/2, 0.01)"]
+    },
+    {
+      "name": "synth_guard",
+      "priority": 7,
+      "when": "color == \"synth\"",
+      "actions": ["cohere(20, 0.07, color == \"synth\")", "align(20, 0.06, color == \"synth\")", "separate(9, 0.1, color == \"synth\")", "attract(50, 0.25, color == \"station\")"]
+    },
+    {
+      "name": "low_drag",
+      "priority": 12,
+      "when": "true",
+      "actions": ["drag(0.003)"]
+    },
+    {
+      "name": "collisions",
+      "priority": 20,
+      "when": "true",
+      "actions": ["collide(2.8, 0.92, 0.04)"]
+    },
+    {
+      "name": "bounds",
+      "priority": 30,
+      "when": "true",
+      "actions": ["bounce(W, H, 0.92)"]
+    },
+    {
+      "name": "clamp",
+      "priority": 100,
+      "when": "true",
+      "actions": ["clamp_speed(MAX_SPEED)"]
+    }
+  ]
+}
