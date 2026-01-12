@@ -343,6 +343,7 @@ export class Renderer {
 
     if (this.mode === "isometric") {
       this.buildIsometricTerrain(worldW, worldH);
+      this.needsTerrainRebuild = false;
       return;
     }
 
@@ -365,6 +366,7 @@ export class Renderer {
     this.terrain = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ vertexColors: true }));
     this.terrain.receiveShadow = true;
     this.scene.add(this.terrain);
+    this.needsTerrainRebuild = false;
   }
 
 
