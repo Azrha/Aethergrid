@@ -24,6 +24,15 @@ else
     exit 1
 fi
 
+# GPU Support Check
+if command -v nvidia-smi >/dev/null 2>&1; then
+    echo "[INFO] NVIDIA GPU detected. Checking for CuPy..."
+    if ! "$VENV_DIR/bin/python" -c "import cupy" >/dev/null 2>&1; then
+        echo "[INFO] Installing CuPy for CUDA 12..."
+        "$VENV_DIR/bin/pip" install cupy-cuda12x
+    fi
+fi
+
 check_health() {
   if command -v curl >/dev/null 2>&1; then
     curl -fsS --max-time 2 "${BACKEND_URL}/api/health" >/dev/null 2>&1
