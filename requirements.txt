@@ -1,5 +1,5 @@
 streamlit==1.40.2
-numpy==2.4.0
+numpy==2.2.0
 pillow==10.4.0
 lark==1.2.2
 streamlit-autorefresh==1.0.1
