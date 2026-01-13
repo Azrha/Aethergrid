@@ -298,7 +298,7 @@ export default function App() {
 
   const fetchFields = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/fields?step=4`);
+      const res = await fetch(`${API_BASE}/api/fields?step=1`);
       if (!res.ok) return;
       if (res.status === 204) return;
       const payload = (await res.json()) as FieldPayload;

@@ -3,8 +3,8 @@
   "description": "Settlements, wildlife, and social motion with day/night rhythms.",
   "seed": 42,
   "consts": {
-    "W": 24,
-    "H": 24,
+    "W": 64,
+    "H": 64,
     "DT": 1.0,
     "G": 0.18,
     "MAX_SPEED": 2.0,
@@ -22,7 +22,7 @@
     {
       "name": "Settlers",
       "color": "settler",
-      "count": 10,
+      "count": 12,
       "mass_range": [
         0.8,
         1.2
@@ -51,7 +51,7 @@
     {
       "name": "Wildlife",
       "color": "fauna",
-      "count": 15,
+      "count": 18,
       "mass_range": [
         0.9,
         1.6
@@ -76,7 +76,7 @@
     {
       "name": "Wayfarers",
       "color": "outsider",
-      "count": 2,
+      "count": 4,
       "mass_range": [
         1.0,
         1.8
@@ -101,7 +101,7 @@
     {
       "name": "Homesteads",
       "color": "habitat",
-      "count": 5,
+      "count": 8,
       "mass_range": [
         3.0,
         6.0
