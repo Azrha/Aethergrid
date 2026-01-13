@@ -19,96 +19,212 @@ export type Entity = {
   kind?: string;
 };
 
-// --- HIGH FIDELITY VOXEL SCHEMATICS ---
-// "No Simple Shapes". We build complex models from micro-voxels.
-type VoxelDef = { x: number; y: number; z: number; colorOff: number }; // colorOff: offset from base color
+// --- ULTRA-DETAILED VOXEL SCHEMATICS ---
+// Highly detailed micro-voxel models for living creatures
+type VoxelDef = { x: number; y: number; z: number; colorOff: number };
 
 const VOXEL_MODELS: Record<string, VoxelDef[]> = {
-  // SETTLER: Humanoid (Arms, Legs, Head, Body)
+  // SETTLER: Detailed Humanoid - 28 voxels
   settler: [
-    // Legs
-    { x: -0.2, y: 0, z: 0, colorOff: -0.1 },
-    { x: 0.2, y: 0, z: 0, colorOff: -0.1 },
-    { x: -0.2, y: 0, z: 0.2, colorOff: -0.1 },
-    { x: 0.2, y: 0, z: 0.2, colorOff: -0.1 },
-    // Torso
-    { x: 0, y: 0, z: 0.4, colorOff: 0 },
-    { x: 0, y: 0, z: 0.6, colorOff: 0 },
-    { x: -0.2, y: 0, z: 0.5, colorOff: 0 },
-    { x: 0.2, y: 0, z: 0.5, colorOff: 0 },
-    // Arms
-    { x: -0.4, y: 0, z: 0.5, colorOff: 0.1 },
-    { x: 0.4, y: 0, z: 0.5, colorOff: 0.1 },
-    // Head
-    { x: 0, y: 0, z: 0.8, colorOff: 0.2 },
-    // Hair/Hat
-    { x: 0, y: 0, z: 1.0, colorOff: -0.2 },
-    { x: 0.2, y: 0, z: 0.9, colorOff: -0.2 },
-    { x: -0.2, y: 0, z: 0.9, colorOff: -0.2 },
+    // Feet
+    { x: -0.15, y: 0, z: 0, colorOff: -0.2 },
+    { x: 0.15, y: 0, z: 0, colorOff: -0.2 },
+    // Legs (calves + thighs)
+    { x: -0.12, y: 0, z: 0.12, colorOff: -0.1 },
+    { x: 0.12, y: 0, z: 0.12, colorOff: -0.1 },
+    { x: -0.1, y: 0, z: 0.25, colorOff: 0 },
+    { x: 0.1, y: 0, z: 0.25, colorOff: 0 },
+    // Pelvis + Torso
+    { x: 0, y: 0, z: 0.35, colorOff: 0.05 },
+    { x: 0, y: 0, z: 0.45, colorOff: 0.1 },
+    { x: -0.12, y: 0, z: 0.45, colorOff: 0.08 },
+    { x: 0.12, y: 0, z: 0.45, colorOff: 0.08 },
+    { x: 0, y: 0, z: 0.55, colorOff: 0.12 },
+    { x: -0.15, y: 0, z: 0.55, colorOff: 0.1 },
+    { x: 0.15, y: 0, z: 0.55, colorOff: 0.1 },
+    // Shoulders + Arms
+    { x: -0.22, y: 0, z: 0.6, colorOff: 0.15 },
+    { x: 0.22, y: 0, z: 0.6, colorOff: 0.15 },
+    { x: -0.32, y: 0, z: 0.52, colorOff: 0.2 },
+    { x: 0.32, y: 0, z: 0.52, colorOff: 0.2 },
+    { x: -0.38, y: 0, z: 0.4, colorOff: 0.25 },
+    { x: 0.38, y: 0, z: 0.4, colorOff: 0.25 },
+    // Neck + Head
+    { x: 0, y: 0, z: 0.68, colorOff: 0.22 },
+    { x: 0, y: 0, z: 0.8, colorOff: 0.25 },
+    { x: -0.08, y: 0, z: 0.8, colorOff: 0.23 },
+    { x: 0.08, y: 0, z: 0.8, colorOff: 0.23 },
+    { x: 0, y: -0.08, z: 0.8, colorOff: 0.23 },
+    { x: 0, y: 0.08, z: 0.8, colorOff: 0.23 },
+    // Hair
+    { x: 0, y: 0, z: 0.92, colorOff: -0.3 },
+    { x: -0.1, y: 0, z: 0.9, colorOff: -0.28 },
+    { x: 0.1, y: 0, z: 0.9, colorOff: -0.28 },
   ],
-  // FAUNA: Quadruped (Body, 4 Legs, Head)
+
+  // FAUNA: Quadruped Animal - 26 voxels
   fauna: [
-    // Legs
-    { x: -0.3, y: -0.3, z: 0, colorOff: -0.1 },
-    { x: 0.3, y: -0.3, z: 0, colorOff: -0.1 },
-    { x: -0.3, y: 0.3, z: 0, colorOff: -0.1 },
-    { x: 0.3, y: 0.3, z: 0, colorOff: -0.1 },
+    // Hooves
+    { x: -0.25, y: -0.25, z: 0, colorOff: -0.2 },
+    { x: 0.25, y: -0.25, z: 0, colorOff: -0.2 },
+    { x: -0.25, y: 0.25, z: 0, colorOff: -0.2 },
+    { x: 0.25, y: 0.25, z: 0, colorOff: -0.2 },
+    // Lower Legs
+    { x: -0.22, y: -0.22, z: 0.1, colorOff: -0.1 },
+    { x: 0.22, y: -0.22, z: 0.1, colorOff: -0.1 },
+    { x: -0.22, y: 0.22, z: 0.1, colorOff: -0.1 },
+    { x: 0.22, y: 0.22, z: 0.1, colorOff: -0.1 },
+    // Upper Legs
+    { x: -0.18, y: -0.18, z: 0.2, colorOff: 0 },
+    { x: 0.18, y: -0.18, z: 0.2, colorOff: 0 },
+    { x: -0.18, y: 0.18, z: 0.2, colorOff: 0 },
+    { x: 0.18, y: 0.18, z: 0.2, colorOff: 0 },
     // Body
-    { x: 0, y: 0, z: 0.3, colorOff: 0 },
-    { x: 0, y: 0.2, z: 0.3, colorOff: 0 },
-    { x: 0, y: -0.2, z: 0.3, colorOff: 0 },
-    { x: 0, y: 0, z: 0.5, colorOff: 0 },
-    // Head
-    { x: 0, y: 0.4, z: 0.6, colorOff: 0.1 },
+    { x: 0, y: -0.2, z: 0.3, colorOff: 0.05 },
+    { x: 0, y: -0.3, z: 0.35, colorOff: 0.05 },
+    { x: 0, y: 0, z: 0.35, colorOff: 0.1 },
+    { x: 0.1, y: 0, z: 0.38, colorOff: 0.08 },
+    { x: -0.1, y: 0, z: 0.38, colorOff: 0.08 },
+    { x: 0, y: 0.2, z: 0.35, colorOff: 0.1 },
+    { x: 0, y: 0.35, z: 0.4, colorOff: 0.12 },
+    // Neck + Head
+    { x: 0, y: 0.45, z: 0.5, colorOff: 0.15 },
+    { x: 0, y: 0.55, z: 0.55, colorOff: 0.18 },
+    { x: 0, y: 0.62, z: 0.52, colorOff: 0.2 },
+    // Ears
+    { x: -0.08, y: 0.58, z: 0.62, colorOff: 0.15 },
+    { x: 0.08, y: 0.58, z: 0.62, colorOff: 0.15 },
     // Tail
-    { x: 0, y: -0.4, z: 0.4, colorOff: -0.05 },
+    { x: 0, y: -0.4, z: 0.35, colorOff: -0.1 },
+    { x: 0, y: -0.5, z: 0.3, colorOff: -0.15 },
   ],
-  // GROVE: Complex Tree (Trunk, Layers of Leaves)
+
+  // GROVE: Lush Tree - 33 voxels
   grove: [
+    // Roots
+    { x: 0.15, y: 0.15, z: 0, colorOff: -0.5 },
+    { x: -0.15, y: -0.15, z: 0, colorOff: -0.5 },
+    { x: 0.15, y: -0.15, z: 0, colorOff: -0.5 },
+    { x: -0.15, y: 0.15, z: 0, colorOff: -0.5 },
     // Trunk
-    { x: 0, y: 0, z: 0, colorOff: -0.4 },
-    { x: 0, y: 0, z: 0.3, colorOff: -0.4 },
-    { x: 0, y: 0, z: 0.6, colorOff: -0.4 },
+    { x: 0, y: 0, z: 0.1, colorOff: -0.45 },
+    { x: 0, y: 0, z: 0.25, colorOff: -0.4 },
+    { x: 0, y: 0, z: 0.4, colorOff: -0.4 },
+    { x: 0, y: 0, z: 0.55, colorOff: -0.35 },
+    { x: 0.15, y: 0, z: 0.5, colorOff: -0.38 },
+    { x: -0.15, y: 0, z: 0.55, colorOff: -0.38 },
     // Leaves Layer 1 (Wide)
-    { x: 0.4, y: 0, z: 0.8, colorOff: 0.1 },
-    { x: -0.4, y: 0, z: 0.8, colorOff: 0.1 },
-    { x: 0, y: 0.4, z: 0.8, colorOff: 0.1 },
-    { x: 0, y: -0.4, z: 0.8, colorOff: 0.1 },
+    { x: 0.4, y: 0, z: 0.65, colorOff: 0.05 },
+    { x: -0.4, y: 0, z: 0.65, colorOff: 0.05 },
+    { x: 0, y: 0.4, z: 0.65, colorOff: 0.05 },
+    { x: 0, y: -0.4, z: 0.65, colorOff: 0.05 },
+    { x: 0.3, y: 0.3, z: 0.65, colorOff: 0.08 },
+    { x: -0.3, y: 0.3, z: 0.65, colorOff: 0.08 },
+    { x: 0.3, y: -0.3, z: 0.65, colorOff: 0.08 },
+    { x: -0.3, y: -0.3, z: 0.65, colorOff: 0.08 },
     // Leaves Layer 2 (Mid)
-    { x: 0.3, y: 0.3, z: 1.1, colorOff: 0.2 },
-    { x: -0.3, y: -0.3, z: 1.1, colorOff: 0.2 },
-    { x: -0.3, y: 0.3, z: 1.1, colorOff: 0.2 },
-    { x: 0.3, y: -0.3, z: 1.1, colorOff: 0.2 },
-    // Top
-    { x: 0, y: 0, z: 1.4, colorOff: 0.3 },
+    { x: 0.35, y: 0, z: 0.8, colorOff: 0.12 },
+    { x: -0.35, y: 0, z: 0.8, colorOff: 0.12 },
+    { x: 0, y: 0.35, z: 0.8, colorOff: 0.12 },
+    { x: 0, y: -0.35, z: 0.8, colorOff: 0.12 },
+    { x: 0.25, y: 0.25, z: 0.82, colorOff: 0.15 },
+    { x: -0.25, y: 0.25, z: 0.82, colorOff: 0.15 },
+    { x: 0.25, y: -0.25, z: 0.82, colorOff: 0.15 },
+    { x: -0.25, y: -0.25, z: 0.82, colorOff: 0.15 },
+    // Leaves Layer 3 (Upper)
+    { x: 0.25, y: 0, z: 0.95, colorOff: 0.2 },
+    { x: -0.25, y: 0, z: 0.95, colorOff: 0.2 },
+    { x: 0, y: 0.25, z: 0.95, colorOff: 0.2 },
+    { x: 0, y: -0.25, z: 0.95, colorOff: 0.2 },
+    // Top crown
+    { x: 0, y: 0, z: 1.08, colorOff: 0.25 },
+    { x: 0.1, y: 0, z: 1.05, colorOff: 0.23 },
+    { x: -0.1, y: 0, z: 1.05, colorOff: 0.23 },
   ],
-  // HABITAT: House (Walls, Roof, Door)
+
+  // HABITAT: House - 38 voxels
   habitat: [
-    // Base
-    { x: 0, y: 0, z: 0, colorOff: -0.1 },
-    { x: 0.4, y: 0, z: 0, colorOff: -0.1 },
-    { x: -0.4, y: 0, z: 0, colorOff: -0.1 },
-    { x: 0, y: 0.4, z: 0, colorOff: -0.1 },
-    { x: 0.4, y: 0.4, z: 0, colorOff: -0.1 },
-    { x: -0.4, y: 0.4, z: 0, colorOff: -0.1 },
-    { x: 0, y: -0.4, z: 0, colorOff: -0.1 },
-    { x: 0.4, y: -0.4, z: 0, colorOff: -0.1 },
-    { x: -0.4, y: -0.4, z: 0, colorOff: -0.1 },
-    // Walls
-    { x: 0.4, y: 0.4, z: 0.4, colorOff: 0 },
-    { x: -0.4, y: 0.4, z: 0.4, colorOff: 0 },
-    { x: 0.4, y: -0.4, z: 0.4, colorOff: 0 },
-    { x: -0.4, y: -0.4, z: 0.4, colorOff: 0 },
-    // Roof (Pyramid)
-    { x: 0, y: 0, z: 0.8, colorOff: 0.2 },
-    { x: 0.2, y: 0, z: 0.6, colorOff: 0.2 },
-    { x: -0.2, y: 0, z: 0.6, colorOff: 0.2 },
-    { x: 0, y: 0.2, z: 0.6, colorOff: 0.2 },
-    { x: 0, y: -0.2, z: 0.6, colorOff: 0.2 },
+    // Foundation
+    { x: -0.35, y: -0.35, z: 0, colorOff: -0.2 },
+    { x: 0.35, y: -0.35, z: 0, colorOff: -0.2 },
+    { x: -0.35, y: 0.35, z: 0, colorOff: -0.2 },
+    { x: 0.35, y: 0.35, z: 0, colorOff: -0.2 },
+    { x: 0, y: -0.35, z: 0, colorOff: -0.2 },
+    { x: 0, y: 0.35, z: 0, colorOff: -0.2 },
+    { x: -0.35, y: 0, z: 0, colorOff: -0.2 },
+    { x: 0.35, y: 0, z: 0, colorOff: -0.2 },
+    { x: 0, y: 0, z: 0, colorOff: -0.2 },
+    // Walls (corners)
+    { x: -0.35, y: -0.35, z: 0.15, colorOff: 0 },
+    { x: 0.35, y: -0.35, z: 0.15, colorOff: 0 },
+    { x: -0.35, y: 0.35, z: 0.15, colorOff: 0 },
+    { x: 0.35, y: 0.35, z: 0.15, colorOff: 0 },
+    { x: -0.35, y: -0.35, z: 0.3, colorOff: 0.02 },
+    { x: 0.35, y: -0.35, z: 0.3, colorOff: 0.02 },
+    { x: -0.35, y: 0.35, z: 0.3, colorOff: 0.02 },
+    { x: 0.35, y: 0.35, z: 0.3, colorOff: 0.02 },
+    { x: -0.35, y: -0.35, z: 0.45, colorOff: 0.05 },
+    { x: 0.35, y: -0.35, z: 0.45, colorOff: 0.05 },
+    { x: -0.35, y: 0.35, z: 0.45, colorOff: 0.05 },
+    { x: 0.35, y: 0.35, z: 0.45, colorOff: 0.05 },
+    // Windows + Door
+    { x: 0, y: -0.35, z: 0.3, colorOff: -0.15 },
+    { x: 0, y: 0.35, z: 0.3, colorOff: -0.15 },
+    { x: -0.35, y: 0, z: 0.15, colorOff: -0.25 },
+    { x: -0.35, y: 0, z: 0.3, colorOff: -0.25 },
+    // Roof
+    { x: -0.4, y: -0.4, z: 0.55, colorOff: 0.15 },
+    { x: 0.4, y: -0.4, z: 0.55, colorOff: 0.15 },
+    { x: -0.4, y: 0.4, z: 0.55, colorOff: 0.15 },
+    { x: 0.4, y: 0.4, z: 0.55, colorOff: 0.15 },
+    { x: 0, y: -0.4, z: 0.55, colorOff: 0.15 },
+    { x: 0, y: 0.4, z: 0.55, colorOff: 0.15 },
+    { x: -0.4, y: 0, z: 0.55, colorOff: 0.15 },
+    { x: 0.4, y: 0, z: 0.55, colorOff: 0.15 },
+    { x: -0.25, y: -0.25, z: 0.68, colorOff: 0.2 },
+    { x: 0.25, y: -0.25, z: 0.68, colorOff: 0.2 },
+    { x: -0.25, y: 0.25, z: 0.68, colorOff: 0.2 },
+    { x: 0.25, y: 0.25, z: 0.68, colorOff: 0.2 },
+    { x: 0, y: 0, z: 0.8, colorOff: 0.25 },
   ],
+
   // DEFAULT
-  default: [{ x: 0, y: 0, z: 0, colorOff: 0 }],
+  default: [
+    { x: 0, y: 0, z: 0, colorOff: 0 },
+    { x: 0, y: 0, z: 0.2, colorOff: 0.1 },
+  ],
+
+  // HUMANOID: Same as settler
+  humanoid: [
+    { x: -0.15, y: 0, z: 0, colorOff: -0.2 },
+    { x: 0.15, y: 0, z: 0, colorOff: -0.2 },
+    { x: -0.12, y: 0, z: 0.12, colorOff: -0.1 },
+    { x: 0.12, y: 0, z: 0.12, colorOff: -0.1 },
+    { x: -0.1, y: 0, z: 0.25, colorOff: 0 },
+    { x: 0.1, y: 0, z: 0.25, colorOff: 0 },
+    { x: 0, y: 0, z: 0.35, colorOff: 0.05 },
+    { x: 0, y: 0, z: 0.45, colorOff: 0.1 },
+    { x: -0.12, y: 0, z: 0.45, colorOff: 0.08 },
+    { x: 0.12, y: 0, z: 0.45, colorOff: 0.08 },
+    { x: 0, y: 0, z: 0.55, colorOff: 0.12 },
+    { x: -0.15, y: 0, z: 0.55, colorOff: 0.1 },
+    { x: 0.15, y: 0, z: 0.55, colorOff: 0.1 },
+    { x: -0.22, y: 0, z: 0.6, colorOff: 0.15 },
+    { x: 0.22, y: 0, z: 0.6, colorOff: 0.15 },
+    { x: -0.32, y: 0, z: 0.52, colorOff: 0.2 },
+    { x: 0.32, y: 0, z: 0.52, colorOff: 0.2 },
+    { x: -0.38, y: 0, z: 0.4, colorOff: 0.25 },
+    { x: 0.38, y: 0, z: 0.4, colorOff: 0.25 },
+    { x: 0, y: 0, z: 0.68, colorOff: 0.22 },
+    { x: 0, y: 0, z: 0.8, colorOff: 0.25 },
+    { x: -0.08, y: 0, z: 0.8, colorOff: 0.23 },
+    { x: 0.08, y: 0, z: 0.8, colorOff: 0.23 },
+    { x: 0, y: 0, z: 0.92, colorOff: -0.3 },
+    { x: -0.1, y: 0, z: 0.9, colorOff: -0.28 },
+    { x: 0.1, y: 0, z: 0.9, colorOff: -0.28 },
+  ],
 };
+
 type FieldPayload = {
   step: number;
   w: number;
@@ -126,20 +242,38 @@ type RenderMode = "2d" | "3d" | "isometric";
 const ISO_ANGLE_X = Math.atan(1 / Math.sqrt(2)); // ~35.264 degrees
 const TILE_SIZE = 12; // Visual size unit per world unit
 
-// Basic colors for fallback
+// VIBRANT pixel-art color palette matching reference images
 const COLOR_MAP: Record<string, number> = {
-  red: 0xff4646,
-  blue: 0x4678ff,
-  green: 0x46ff8c,
-  metal: 0xbebed2,
-  gray: 0xa0a0a0,
-  gold: 0xffd25a,
-  human: 0xffb28c,
-  animal: 0x78c85a,
-  alien: 0x78ffd4,
-  building: 0x968ca0,
-  tree: 0x50a050,
-  dino: 0x5ad28c,
+  // Basic colors - saturated
+  red: 0xff4466,
+  blue: 0x5588ff,
+  green: 0x55dd77,
+  metal: 0xc8d0e0,
+  gray: 0x8899aa,
+  gold: 0xffcc33,
+  // Entity base colors
+  human: 0xffbb99,    // Warm peach skin
+  animal: 0x66cc55,   // Bright green
+  alien: 0x88ffdd,    // Cyan/teal
+  building: 0xaa8899, // Dusty purple
+  tree: 0x44aa44,     // Forest green
+  dino: 0x55cc88,     // Teal green
+  // Entity kinds - VIBRANT matching reference images
+  settler: 0xffbb99,   // Warm peach (humanoid skin)
+  fauna: 0x66dd55,     // Bright lime green
+  grove: 0x338833,     // Deep forest green
+  habitat: 0xddaa55,   // Warm wood/brown
+  outsider: 0xcc2244,  // Vivid crimson
+  humanoid: 0xffcc99,  // Slightly warmer peach
+  creature: 0xaacc66,  // Yellow-green
+  machine: 0x99aacc,   // Steel blue
+  // Special entity types
+  tree: 0x33aa55,      // Lush green
+  grass: 0x55cc44,     // Bright grass
+  water: 0x4488ee,     // Ocean blue
+  sand: 0xeecc66,      // Beach sand
+  stone: 0x778899,     // Blue-grey stone
+  snow: 0xeeeeff,      // Ice white
 };
 
 const getColor = (str: string) => {
@@ -467,7 +601,9 @@ export class Renderer {
   private rebuildTerrain() {
     if (this.terrainMesh) {
       this.isoGroup.remove(this.terrainMesh);
-      this.terrainMesh.dispose();
+      // Dispose geometry and material separately (Mesh has no direct dispose)
+      this.terrainMesh.geometry?.dispose();
+      (this.terrainMesh.material as THREE.Material)?.dispose();
       this.terrainMesh = null;
     }
 
@@ -475,67 +611,127 @@ export class Renderer {
 
     const { grid_w, grid_h, terrain } = this.fieldData;
 
-    // Use BASIC MATERIAL (Unlit)
-    // This allows exact color control without lighting artifacts. Max vibrance.
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({
-      color: 0xffffff, // Tinted by instanceColor
-      vertexColors: true, // REQUIRED for InstancedMesh colors to show!
-    });
-
-    const count = grid_w * grid_h;
-    const mesh = new THREE.InstancedMesh(geometry, material, count);
-    mesh.castShadow = false;
-    mesh.receiveShadow = false;
-
-    const dummy = new THREE.Object3D();
-    const color = new THREE.Color();
-    let idx = 0;
+    // Create arrays to hold all vertices, colors, and indices
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const indices: number[] = [];
+    let vertexOffset = 0;
 
     const centerX = grid_w * 0.5;
     const centerZ = grid_h * 0.5;
 
+    // Box template vertices (cube)
+    const boxVerts = [
+      // Front
+      [-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5],
+      // Back
+      [-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [0.5, 0.5, -0.5], [0.5, -0.5, -0.5],
+      // Top
+      [-0.5, 0.5, -0.5], [-0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, -0.5],
+      // Bottom
+      [-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, -0.5, 0.5], [-0.5, -0.5, 0.5],
+      // Right
+      [0.5, -0.5, -0.5], [0.5, 0.5, -0.5], [0.5, 0.5, 0.5], [0.5, -0.5, 0.5],
+      // Left
+      [-0.5, -0.5, -0.5], [-0.5, -0.5, 0.5], [-0.5, 0.5, 0.5], [-0.5, 0.5, -0.5],
+    ];
+    const boxIndices = [
+      0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11,
+      12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23
+    ];
+
+    // Debug: Check terrain value distribution
+    let minVal = Infinity, maxVal = -Infinity;
     for (let y = 0; y < grid_h; y++) {
       for (let x = 0; x < grid_w; x++) {
-        const val = terrain[y][x];
+        const v = terrain[y][x];
+        if (v < minVal) minVal = v;
+        if (v > maxVal) maxVal = v;
+      }
+    }
+    console.log(`Terrain values: min=${minVal.toFixed(3)}, max=${maxVal.toFixed(3)}`);
+
+    // Normalize terrain values to 0-1 range
+    const range = maxVal - minVal || 1;
+
+    for (let y = 0; y < grid_h; y++) {
+      for (let x = 0; x < grid_w; x++) {
+        const rawVal = terrain[y][x];
+        // Normalize to 0-1 range
+        const val = (rawVal - minVal) / range;
         const height = Math.floor(val * 8);
 
-        // Visual Height calculation
+        // Position and scale
+        const px = (x - centerX) * 1.0;
         const topY = height * 0.5;
         const bottomY = -4.0;
         const thickness = Math.max(0.5, topY - bottomY);
+        const py = bottomY + thickness / 2.0;
+        const pz = (y - centerZ) * 1.0;
+        const scaleY = thickness;
 
-        dummy.position.set(
-          (x - centerX) * 1.0,
-          bottomY + thickness / 2.0,
-          (y - centerZ) * 1.0,
-        );
-        dummy.scale.set(1.0, thickness, 1.0);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(idx, dummy.matrix);
+        // Determine color based on terrain value and height
+        // Using VIBRANT pixel-art colors matching reference images
+        let r: number, g: number, b: number;
+        if (val < 0.2) {
+          // Deep Water - rich cobalt blue
+          r = 0.15; g = 0.35; b = 0.85;
+        } else if (val < 0.35) {
+          // Shallow Water / Teal - cyan turquoise
+          r = 0.2; g = 0.65; b = 0.85;
+        } else if (val < 0.42) {
+          // Sand/Beach - warm golden yellow
+          r = 0.95; g = 0.82; b = 0.45;
+        } else if (height > 6) {
+          // Snow peaks - pure white with slight blue tint
+          r = 0.98; g = 0.98; b = 1.0;
+        } else if (height > 4) {
+          // Stone/Mountain - purple-grey like reference images
+          r = 0.55; g = 0.45; b = 0.6;
+        } else {
+          // Grass - VIBRANT saturated green with subtle variation
+          const grassVar = (Math.sin(x * 1.2) * 0.08) + (Math.cos(y * 1.2) * 0.08);
+          const grassShade = Math.random() * 0.1; // Subtle random variation
+          r = 0.25 + grassVar;
+          g = 0.75 + grassVar + grassShade;
+          b = 0.3 + grassVar;
+        }
 
-        // Color Logic (Simple)
-        if (val < 0.2)
-          color.setHex(0x4678ff); // Water
-        else if (val < 0.25)
-          color.setHex(0xe6d296); // Sand
-        else if (height > 5)
-          color.setHex(0x8c8c96); // Stone
-        else if (height > 6)
-          color.setHex(0xffffff); // Snow
-        else color.setHex(0x46ff8c); // Grass
+        // Add vertices for this box
+        for (const [vx, vy, vz] of boxVerts) {
+          positions.push(px + vx, py + vy * scaleY, pz + vz);
+          colors.push(r, g, b);
+        }
 
-        mesh.setColorAt(idx, color);
-        idx++;
+        // Add indices (offset by current vertex count)
+        for (const i of boxIndices) {
+          indices.push(vertexOffset + i);
+        }
+        vertexOffset += 24; // 24 vertices per box
       }
     }
 
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    // Create BufferGeometry
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
 
-    this.terrainMesh = mesh;
+    // Use MeshLambertMaterial with vertexColors enabled
+    const material = new THREE.MeshLambertMaterial({
+      vertexColors: true, // USE vertex colors from geometry
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    this.terrainMesh = mesh as any;
     this.isoGroup.add(mesh);
     this.needsRebuild = false;
+
+    console.log("Renderer: Terrain rebuilt with", grid_w * grid_h, "blocks using MERGED GEOMETRY with vertex colors");
   }
 
   render(worldW: number, worldH: number) {
@@ -549,100 +745,97 @@ export class Renderer {
     this.camera.position.set(200 + panX, 200, 200 + panY);
     this.camera.lookAt(panX, 0, panY);
 
-    // --- HIGH FIDELITY VOXEL RENDERER ---
-    // Instancing micro-voxels to build complex shapes.
+    // --- ENTITY RENDERER using Merged Geometry ---
+    if (this.entityMesh) {
+      this.isoGroup.remove(this.entityMesh);
+      this.entityMesh.geometry?.dispose();
+      (this.entityMesh.material as THREE.Material)?.dispose();
+      this.entityMesh = null;
+    }
 
-    // Max instances = Entities * AvgVoxelsPerEntity (e.g., 50 * 20 = 1000) -> Safe 10,000 buffer
-    const MAX_INSTANCES = 10000;
+    if (this.entities.length > 0) {
+      const positions: number[] = [];
+      const colors: number[] = [];
+      const indices: number[] = [];
+      let vertexOffset = 0;
 
-    if (!this.entityMesh) {
-      // Micro-voxel geometry (Small cube)
-      const geometry = new THREE.BoxGeometry(1, 1, 1);
-      const material = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        vertexColors: true,
+      const boxVerts = [
+        [-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5],
+        [-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [0.5, 0.5, -0.5], [0.5, -0.5, -0.5],
+        [-0.5, 0.5, -0.5], [-0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, -0.5],
+        [-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, -0.5, 0.5], [-0.5, -0.5, 0.5],
+        [0.5, -0.5, -0.5], [0.5, 0.5, -0.5], [0.5, 0.5, 0.5], [0.5, -0.5, 0.5],
+        [-0.5, -0.5, -0.5], [-0.5, -0.5, 0.5], [-0.5, 0.5, 0.5], [-0.5, 0.5, -0.5],
+      ];
+      const boxIndices = [
+        0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11,
+        12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23
+      ];
+
+      const time = Date.now() * 0.005;
+
+      this.entities.forEach((e, entityIdx) => {
+        let modelKey = "default";
+        const kindLower = (e.kind || "").toLowerCase();
+        const colorLower = (e.color || "").toLowerCase();
+
+        if (VOXEL_MODELS[kindLower]) modelKey = kindLower;
+        else if (VOXEL_MODELS[colorLower]) modelKey = colorLower;
+        if (colorLower === "human" || colorLower === "red") modelKey = "settler";
+        if (colorLower === "animal" || colorLower === "green") modelKey = "fauna";
+        if (colorLower === "tree" || colorLower === "dino") modelKey = "grove";
+        if (colorLower === "building" || colorLower === "gray") modelKey = "habitat";
+
+        const schematic = VOXEL_MODELS[modelKey] || VOXEL_MODELS["default"];
+        const baseColorHex = getColor(kindLower) !== 0xffffff ? getColor(kindLower) : getColor(colorLower);
+        const baseColor = new THREE.Color(baseColorHex);
+
+        // Use field dimensions (grid_w, grid_h) for entity centering, not frame dimensions
+        // This ensures entities align with the terrain
+        const gridW = this.fieldData?.grid_w ?? worldW;
+        const gridH = this.fieldData?.grid_h ?? worldH;
+        const rx = (e.x - (gridW / 2)) * 1.0;
+        const rz = (e.y - (gridH / 2)) * 1.0;
+        const bob = Math.sin(time + e.id) * 0.1;
+        const ryBase = (e.z * 1.5) + 0.5 + bob;
+
+        for (const v of schematic) {
+          const scale = 0.5;
+          const px = rx + (v.x * scale);
+          const py = ryBase + (v.z * scale);
+          const pz = rz + (v.y * scale);
+
+          const voxelColor = baseColor.clone();
+          voxelColor.offsetHSL(0, 0, v.colorOff);
+
+          for (const [vx, vy, vz] of boxVerts) {
+            positions.push(px + vx * scale, py + vy * scale, pz + vz * scale);
+            colors.push(voxelColor.r, voxelColor.g, voxelColor.b);
+          }
+
+          for (const i of boxIndices) {
+            indices.push(vertexOffset + i);
+          }
+          vertexOffset += 24;
+        }
       });
 
-      this.entityMesh = new THREE.InstancedMesh(
-        geometry,
-        material,
-        MAX_INSTANCES,
-      );
-      this.entityMesh.castShadow = false;
-      this.entityMesh.receiveShadow = false;
-      this.entityMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      this.isoGroup.add(this.entityMesh);
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+
+      const material = new THREE.MeshLambertMaterial({ vertexColors: true });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      this.entityMesh = mesh as any;
+      this.isoGroup.add(mesh);
     }
-
-    const dummy = new THREE.Object3D();
-    const color = new THREE.Color();
-    let idx = 0;
-
-    this.entities.forEach((e) => {
-      // Determine Model Type
-      let modelKey = "default";
-      let baseColorHex = 0xffffff;
-
-      if (e.kind) modelKey = e.kind.toLowerCase();
-      // Fallback to color if kind is missing or generic
-      if (e.color === "settler") modelKey = "settler";
-      if (e.color === "fauna") modelKey = "fauna";
-      if (e.color === "grove") modelKey = "grove";
-      if (e.color === "habitat") modelKey = "habitat";
-      if (e.color === "outsider") modelKey = "settler"; // Re-use humanoid
-
-      const schematic = VOXEL_MODELS[modelKey] || VOXEL_MODELS["default"];
-      baseColorHex = getColor(e.kind || e.color);
-
-      // Position in World
-      const rx = (e.x - worldW / 2) * 1.0;
-      const rz = (e.y - worldH / 2) * 1.0;
-
-      // Animation: Bobbing
-      const time = Date.now() * 0.005;
-      const bob = Math.sin(time + e.id) * 0.1;
-      const ryBase = e.z * 1.5 + 0.5 + bob;
-
-      // Render each sub-voxel of the schematic
-      for (const v of schematic) {
-        if (idx >= MAX_INSTANCES) break;
-
-        // Sub-voxel transform
-        // We scale the schematic by a factor (e.g. 0.6) so the overall entity fits in 1x1 block
-        const scale = 0.5;
-
-        dummy.position.set(
-          rx + v.x * scale,
-          ryBase + v.z * scale, // Z in schematic is Up (Y in ThreeJS)
-          rz + v.y * scale, // Y in schematic is Depth (Z in ThreeJS)
-        );
-
-        // Micro-voxel size
-        dummy.scale.set(scale, scale, scale);
-        dummy.updateMatrix();
-        this.entityMesh!.setMatrixAt(idx, dummy.matrix);
-
-        // Color variation
-        const c = new THREE.Color(baseColorHex);
-        c.offsetHSL(0, 0, v.colorOff); // Lighten/Darken parts
-        this.entityMesh!.setColorAt(idx, c);
-
-        idx++;
-      }
-    });
-
-    // Hide unused instances
-    for (let i = idx; i < MAX_INSTANCES; i++) {
-      dummy.position.set(0, -9999, 0);
-      dummy.scale.set(0, 0, 0);
-      dummy.updateMatrix();
-      this.entityMesh.setMatrixAt(i, dummy.matrix);
-    }
-
-    this.entityMesh.instanceMatrix.needsUpdate = true;
-    if (this.entityMesh.instanceColor)
-      this.entityMesh.instanceColor.needsUpdate = true;
 
     this.renderer.render(this.scene, this.activeCamera);
   }
 }
+

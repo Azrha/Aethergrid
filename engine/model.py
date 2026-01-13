@@ -175,6 +175,19 @@ class World:
             e.z += e.vz * step_dt
             e.age += step_dt
             e.seen = max(0.0, e.seen - 0.01)
+            
+            # BOUNDARY WRAPPING - Keep entities within world bounds
+            # Wrap around (teleport to opposite side when hitting boundary)
+            if e.x < 0:
+                e.x = self.w - 1
+            elif e.x >= self.w:
+                e.x = 0
+            if e.y < 0:
+                e.y = self.h - 1
+            elif e.y >= self.h:
+                e.y = 0
+            # Keep z within reasonable bounds (0 to 10 for height)
+            e.z = max(0.0, min(10.0, e.z))
 
             ix = int(max(0, min(self.w-1, round(e.x))))
             iy = int(max(0, min(self.h-1, round(e.y))))

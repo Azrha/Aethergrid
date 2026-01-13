@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import EngineView from "./components/EngineView";
 import { AmbientAudio } from "./engine/ambientAudio";
 
-const DEFAULT_ENTITY_COUNT = 50;
+const DEFAULT_ENTITY_COUNT = 300;  // More entities for a living world
 const DEFAULT_API_BASE = "http://127.0.0.1:8000";
 const DEFAULT_PRESET_ID = "living_world.json";
 
@@ -102,7 +102,8 @@ export default function App() {
   const [dsl, setDsl] = useState("");
   const [profiles, setProfiles] = useState<unknown[] | null>(null);
   const [seed, setSeed] = useState(42);
-  const [n, setN] = useState(240);
+  const [n, setN] = useState(400);  // Large entity count for living world
+  const [zoom, setZoom] = useState(1.0);  // Camera zoom level
   const [tickMs, setTickMs] = useState(33);
   const [steps, setSteps] = useState(1);
   const [run, setRun] = useState(false);
@@ -559,6 +560,19 @@ export default function App() {
                 value={audioVolume}
                 onChange={(e) => setAudioVolume(Number(e.target.value))}
               />
+            </div>
+            <label>Camera Zoom</label>
+            <div className="slider-row">
+              <input
+                className="range"
+                type="range"
+                min="0.3"
+                max="3"
+                step="0.1"
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+              />
+              <span className="slider-value">{zoom.toFixed(1)}x</span>
             </div>
             <div className="hint">Drag to orbit. Scroll to zoom. Click to inspect.</div>
             <button className="secondary" onClick={openPopup}>

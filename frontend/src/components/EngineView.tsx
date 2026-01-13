@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Renderer, Entity } from "../engine/Renderer";
 import type { AssetStyle } from "../engine/assets";
+import { EntityThoughts, SpeechBubble } from "./SpeechBubble";
 
 type FramePayload = {
   t: number;
@@ -19,6 +20,13 @@ type FieldPayload = {
   water: number[][];
   fertility: number[][];
   climate: number[][];
+};
+
+type Thought = {
+  entity_id: number;
+  text: string;
+  is_speech: boolean;
+  duration_ms: number;
 };
 
 type Props = {
@@ -97,6 +105,11 @@ export default function EngineView({
     count: 0,
   });
   const lastFrameTime = useRef<number | null>(null);
+
+  // Ollama AI State
+  const [ollamaConnected, setOllamaConnected] = useState(false);
+  const [thoughts, setThoughts] = useState<Thought[]>([]);
+  const [entityPositions, setEntityPositions] = useState<Map<number, { x: number; y: number }>>(new Map());
 
   const normalizedWsUrl = useMemo(() => {
     return normalizeWsUrl(apiBase);
@@ -380,6 +393,85 @@ export default function EngineView({
     }
   }, [initialFrame, rendererReady]);
 
+  // Ollama: Check connection on mount
+  useEffect(() => {
+    const checkOllama = async () => {
+      try {
+        const res = await fetch(`${httpBase}/api/ollama/status`);
+        if (res.ok) {
+          const data = await res.json();
+          setOllamaConnected(data.available);
+        }
+      } catch {
+        setOllamaConnected(false);
+      }
+    };
+    checkOllama();
+    const interval = setInterval(checkOllama, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, [httpBase]);
+
+  // Ollama: Generate thoughts periodically when running
+  useEffect(() => {
+    if (!ollamaConnected || !hasFrame) return;
+
+    const generateThoughts = async () => {
+      try {
+        const res = await fetch(`${httpBase}/api/ollama/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ max_count: 2 }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.thoughts?.length) {
+            setThoughts(prev => [...prev, ...data.thoughts]);
+          }
+        }
+      } catch {
+        // Ignore errors, Ollama might not be running
+      }
+    };
+
+    // Generate thoughts every 8 seconds
+    const interval = setInterval(generateThoughts, 8000);
+    generateThoughts(); // Initial generation
+
+    return () => clearInterval(interval);
+  }, [httpBase, ollamaConnected, hasFrame]);
+
+  // Handle thought expiration
+  const handleThoughtExpire = useCallback((entityId: number) => {
+    setThoughts(prev => prev.filter(t => t.entity_id !== entityId));
+  }, []);
+
+  // Update entity positions for speech bubble placement (simplified - centered in viewport)
+  useEffect(() => {
+    const frame = lastFrameRef.current;
+    if (!frame) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const positions = new Map<number, { x: number; y: number }>();
+    const rect = canvas.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    frame.entities.forEach((entity, idx) => {
+      // Simple positioning - spread entities around center with some offset
+      const angle = (idx / Math.max(1, frame.entities.length)) * Math.PI * 2;
+      const radius = 100 + Math.random() * 50;
+      positions.set(entity.id, {
+        x: centerX + Math.cos(angle) * radius,
+        y: centerY + Math.sin(angle) * radius,
+      });
+    });
+
+    setEntityPositions(positions);
+  }, [diagnostics]); // Re-calculate when diagnostics update (frame updates)
+
+
   return (
     <div className="canvas-wrap">
       {rendererError && (
@@ -416,7 +508,22 @@ export default function EngineView({
           <canvas ref={overlayCanvasRef} width={160} height={100} />
         </div>
       )}
+
+      {/* AI Status Indicator */}
+      <div className={`ai-status ${ollamaConnected ? 'connected' : ''}`}>
+        <span className="dot" />
+        <span>{ollamaConnected ? 'AI Connected' : 'AI Offline'}</span>
+      </div>
+
+      {/* Entity Speech Bubbles */}
+      <EntityThoughts
+        thoughts={thoughts}
+        entityPositions={entityPositions}
+        onThoughtExpire={handleThoughtExpire}
+      />
+
       <canvas ref={canvasRef} />
     </div>
   );
 }
+

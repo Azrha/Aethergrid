@@ -94,7 +94,7 @@ class SimulationService:
             use_gpu = backend_name == "gpu"
             backend = get_backend(use_gpu)
             try:
-                world = seed_world(256, 256, n=n, seed=seed, backend=backend, profiles=profiles)
+                world = seed_world(64, 64, n=n, seed=seed, backend=backend, profiles=profiles)
                 kernel = Kernel(world, prog.consts, prog.laws)
                 W, H = kernel.world.w, kernel.world.h
                 DT = kernel.world.dt
@@ -106,7 +106,7 @@ class SimulationService:
                     logger.exception("GPU apply failed; falling back to CPU.")
                     disable_gpu()
                     backend = get_backend(False)
-                    world = seed_world(256, 256, n=n, seed=seed, backend=backend, profiles=profiles)
+                    world = seed_world(64, 64, n=n, seed=seed, backend=backend, profiles=profiles)
                     kernel = Kernel(world, prog.consts, prog.laws)
                     W, H = kernel.world.w, kernel.world.h
                     DT = kernel.world.dt

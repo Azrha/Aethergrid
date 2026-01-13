@@ -9,6 +9,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Resp
 from fastapi.middleware.cors import CORSMiddleware
 
 from .sim_service import SimulationService
+from .ollama_service import ollama_service
 from engine.backend import gpu_available
 
 logger = logging.getLogger("mythos")
@@ -95,6 +96,72 @@ async def fields(step: int = 4) -> Dict[str, Any]:
     if payload is None:
         return Response(status_code=204)
     return payload
+
+
+# --- OLLAMA AI ENDPOINTS ---
+
+@app.get("/api/ollama/status")
+async def ollama_status() -> Dict[str, Any]:
+    """Check if Ollama is available and get status"""
+    available = await ollama_service.check_ollama_available()
+    return {
+        "available": available,
+        "model": ollama_service.model,
+        "enabled": ollama_service.enabled,
+    }
+
+
+@app.post("/api/ollama/generate")
+async def ollama_generate(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Generate thoughts for entities"""
+    if not ollama_service.enabled:
+        await ollama_service.check_ollama_available()
+        
+    if not ollama_service.enabled:
+        return {"ok": False, "error": "Ollama not available", "thoughts": []}
+    
+    # Get current entities from simulation
+    frame = service.frame_payload()
+    if not frame or not frame.get("entities"):
+        return {"ok": True, "thoughts": []}
+    
+    entities = frame["entities"]
+    max_count = payload.get("max_count", 3)
+    
+    # Generate thoughts
+    thoughts = await ollama_service.generate_batch_thoughts(
+        entities=entities,
+        max_count=max_count,
+        context={"time": frame.get("t", 0)}
+    )
+    
+    return {
+        "ok": True,
+        "thoughts": [
+            {
+                "entity_id": t.entity_id,
+                "text": t.text,
+                "is_speech": t.is_speech,
+                "duration_ms": t.duration_ms,
+            }
+            for t in thoughts
+        ]
+    }
+
+
+@app.get("/api/ollama/thoughts")
+async def get_thoughts() -> Dict[str, Any]:
+    """Get currently active entity thoughts"""
+    thoughts = ollama_service.get_active_thoughts()
+    return {"thoughts": thoughts}
+
+
+@app.post("/api/ollama/model")
+async def set_ollama_model(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Set the Ollama model to use"""
+    model = payload.get("model", "llama3.2")
+    success = await ollama_service.set_model(model)
+    return {"ok": success, "model": ollama_service.model}
 
 
 @app.websocket("/ws/stream")
