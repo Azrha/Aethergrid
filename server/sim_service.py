@@ -87,7 +87,7 @@ class SimulationService:
         profiles: Optional[List[Dict[str, Any]]],
         seed: int,
         n: int,
-        backend_name: str = "cpu",
+        backend_name: str = "gpu",
     ) -> None:
         async with self._lock:
             prog = compile_program(dsl)

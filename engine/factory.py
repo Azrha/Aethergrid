@@ -12,9 +12,9 @@ def _range_or(value, fallback):
     return list(fallback)
 
 def seed_world(
-    w: int,
-    h: int,
-    n: int = 120,
+    w: int = 24,
+    h: int = 24,
+    n: int = 50,
     seed: int = 42,
     backend: Backend | None = None,
     profiles: list[dict] | None = None,
@@ -82,4 +82,26 @@ def seed_world(
                 id=i+1, x=x, y=y, z=z, vx=vx, vy=vy, vz=vz,
                 mass=mass, hardness=hardness, color=color
             ))
+
+    # --- Terrain Generation ---
+    xp = world.backend.xp
+    # Generate base noise
+    noise = xp.random.rand(h, w).astype(xp.float32)
+    
+    # Simple smoothing to create "hills" (iterative averaging)
+    # This creates a heightmap effect without needing a Perlin library
+    for _ in range(4):
+        noise = (
+            noise 
+            + world.backend.roll(noise, 1, 0) 
+            + world.backend.roll(noise, -1, 0) 
+            + world.backend.roll(noise, 1, 1) 
+            + world.backend.roll(noise, -1, 1)
+        ) / 5.0
+    
+    # Scale to desired height range (e.g., 0.0 to 1.5)
+    # 0.5 is sea level usually
+    world.terrain_field[:] = noise * 3.0
+    # --------------------------
+
     return world

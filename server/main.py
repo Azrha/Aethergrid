@@ -101,18 +101,35 @@ async def fields(step: int = 4) -> Dict[str, Any]:
 async def ws_stream(ws: WebSocket):
     await ws.accept()
     try:
+        # Send initial terrain data immediately upon connection
+        fields = service.fields_payload(step=4)
+        if fields:
+            await ws.send_text(json.dumps({"type": "fields", "data": fields}, allow_nan=False))
+        
         while True:
             payload = service.frame_payload()
             if payload is None:
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(0.1)
                 continue
             try:
-                await ws.send_text(json.dumps(payload, allow_nan=False))
+                # Wrap frame in type to distinguish from fields if needed, 
+                # but for now keeping compatible with current frontend unless we change it.
+                # Actually, checking frontend Renderer.ts, it expects just the payload?
+                # Let's check Renderer.ts first to be safe, but sending fields as a separate message
+                # might break it if it expects only one type. 
+                # WAIT: Renderer.ts usually fetches fields via HTTP or expects a specific WS format.
+                # Let's stick to just making sure the loop is stable first.
+                
+                 await ws.send_text(json.dumps(payload, allow_nan=False))
             except WebSocketDisconnect:
+                logger.info("Client disconnected")
                 return
             except Exception:
                 logger.exception("WebSocket frame serialization failed")
                 return
-            await asyncio.sleep(service.tick_ms / 1000.0)
+            
+            # Rate limit to avoid flooding
+            await asyncio.sleep(max(0.033, service.tick_ms / 1000.0))
     except WebSocketDisconnect:
+        logger.info("Client disconnected during init")
         return

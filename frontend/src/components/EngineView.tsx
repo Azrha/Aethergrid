@@ -311,10 +311,21 @@ export default function EngineView({
       };
       ws.onmessage = (ev) => {
         try {
-          const payload = JSON.parse(ev.data) as { w: number; h: number; entities: Entity[] };
+          const data = JSON.parse(ev.data);
           lastMessage = Date.now();
+
+          // New: Handle typed messages (Terrain Fields)
+          if (data.type === "fields") {
+            const renderer = rendererRef.current;
+            if (renderer && data.data) {
+              renderer.setFields(data.data);
+            }
+            return;
+          }
+
+          // Default: Treat as FramePayload
           stopPolling();
-          applyPayload(payload);
+          applyPayload(data);
         } catch {
           return;
         }

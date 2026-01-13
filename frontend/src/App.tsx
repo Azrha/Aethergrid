@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import EngineView from "./components/EngineView";
 import { AmbientAudio } from "./engine/ambientAudio";
 
+const DEFAULT_ENTITY_COUNT = 50;
 const DEFAULT_API_BASE = "http://127.0.0.1:8000";
 const DEFAULT_PRESET_ID = "living_world.json";
 
@@ -307,10 +308,15 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (!backendReady || !run) return;
-    const timer = window.setInterval(fetchFields, 4000);
+    if (!backendReady) return;
+    // FETCH FIELDS ALWAYS to ensure terrain is visible, even if paused
     void fetchFields();
-    return () => window.clearInterval(timer);
+
+    // Continue polling if running
+    if (run) {
+      const timer = window.setInterval(fetchFields, 4000);
+      return () => window.clearInterval(timer);
+    }
   }, [backendReady, run]);
 
   useEffect(() => {
