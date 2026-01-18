@@ -55,6 +55,10 @@ OLLAMA_THOUGHTS_ENABLED = env_bool("OLLAMA_THOUGHTS_ENABLED", True)
 OLLAMA_ACTIONS_ENABLED = env_bool("OLLAMA_ACTIONS_ENABLED", True)
 OLLAMA_CONVO_ENABLED = env_bool("OLLAMA_CONVO_ENABLED", False)
 OLLAMA_TIMEOUT = env_float("OLLAMA_TIMEOUT", 6.0)
+OLLAMA_ROLE_MODELS = os.environ.get(
+    "OLLAMA_ROLE_MODELS",
+    "humanoid=gemma3:4b,animal=qwen2.5:3b,alien=deepseek-r1:1.5b,default=qwen2.5:3b",
+)
 
 BRAIN_ENABLED = env_bool("BRAIN_ENABLED", True)
 BRAIN_MEMORY_LIMIT = env_int("BRAIN_MEMORY_LIMIT", 80)

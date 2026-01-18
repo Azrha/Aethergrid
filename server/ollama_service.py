@@ -23,6 +23,7 @@ from .config import (
     OLLAMA_ACTIONS_ENABLED,
     OLLAMA_CONVO_ENABLED,
     OLLAMA_TIMEOUT,
+    OLLAMA_ROLE_MODELS,
 )
 
 @dataclass
@@ -59,6 +60,7 @@ class OllamaService:
         self.enable_thoughts = OLLAMA_THOUGHTS_ENABLED
         self.enable_actions = OLLAMA_ACTIONS_ENABLED
         self.enable_convo = OLLAMA_CONVO_ENABLED
+        self.role_models = self._parse_role_models(OLLAMA_ROLE_MODELS)
         
     async def check_ollama_available(self) -> bool:
         """Check if Ollama server is running and available"""
@@ -78,6 +80,26 @@ class OllamaService:
         """Set the Ollama model to use"""
         self.model = model
         return await self.check_ollama_available()
+
+    def _parse_role_models(self, raw: str) -> Dict[str, str]:
+        mapping: Dict[str, str] = {}
+        for entry in (raw or "").split(","):
+            if "=" not in entry:
+                continue
+            key, value = entry.split("=", 1)
+            key = key.strip().lower()
+            value = value.strip()
+            if key and value:
+                mapping[key] = value
+        return mapping
+
+    def _model_for_entity(self, entity: Dict[str, Any]) -> str:
+        kind = str(entity.get("kind", "")).strip().lower()
+        color = str(entity.get("color", "")).strip().lower()
+        for key in (kind, color):
+            if key and key in self.role_models:
+                return self.role_models[key]
+        return self.role_models.get("default", self.model)
     
     def _build_entity_prompt(self, entity: Dict[str, Any], context: Dict[str, Any]) -> str:
         """Build a prompt for generating entity speech/thoughts"""
@@ -215,9 +237,10 @@ Only output the thought text, nothing else."""
         return None
     
     async def generate_entity_thought(
-        self, 
-        entity: Dict[str, Any], 
-        context: Optional[Dict[str, Any]] = None
+        self,
+        entity: Dict[str, Any],
+        context: Optional[Dict[str, Any]] = None,
+        model_override: Optional[str] = None,
     ) -> Optional[EntityThought]:
         """Generate a thought or speech for an entity"""
         if not self.enabled or not self.enable_thoughts:
@@ -234,13 +257,14 @@ Only output the thought text, nothing else."""
             
         context = context or {}
         prompt = self._build_entity_prompt(entity, context)
+        model = model_override or self._model_for_entity(entity)
         
         try:
             async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.host}/api/generate",
                     json={
-                        "model": self.model,
+                        "model": model,
                         "prompt": prompt,
                         "stream": False,
                         "options": {
@@ -278,7 +302,8 @@ Only output the thought text, nothing else."""
     async def generate_entity_action(
         self,
         entity: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
+        model_override: Optional[str] = None,
     ) -> Optional[EntityAction]:
         if not self.enabled or not self.enable_actions:
             return None
@@ -293,13 +318,14 @@ Only output the thought text, nothing else."""
 
         context = context or {}
         prompt = self._build_action_prompt(entity, context)
+        model = model_override or self._model_for_entity(entity)
 
         try:
             async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.host}/api/generate",
                     json={
-                        "model": self.model,
+                        "model": model,
                         "prompt": prompt,
                         "stream": False,
                         "options": {
@@ -365,7 +391,12 @@ Only output the thought text, nothing else."""
                 actions.append(action)
         return actions
 
-    async def generate_summary(self, entity: Dict[str, Any], memories: List[str]) -> Optional[str]:
+    async def generate_summary(
+        self,
+        entity: Dict[str, Any],
+        memories: List[str],
+        model_override: Optional[str] = None,
+    ) -> Optional[str]:
         if not self.enabled or not self.enable_thoughts:
             return None
         if not memories:
@@ -377,12 +408,13 @@ Only output the thought text, nothing else."""
             f"Entity type: {entity_kind}\n"
             "Memories:\n- " + "\n- ".join(memories[:10])
         )
+        model = model_override or self._model_for_entity(entity)
         try:
             async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.host}/api/generate",
                     json={
-                        "model": self.model,
+                        "model": model,
                         "prompt": prompt,
                         "stream": False,
                         "options": {"temperature": 0.3, "num_predict": 80},
@@ -401,6 +433,7 @@ Only output the thought text, nothing else."""
         entity_a: Dict[str, Any],
         entity_b: Dict[str, Any],
         context: Optional[Dict[str, Any]] = None,
+        model_override: Optional[str] = None,
     ) -> List[Dict[str, str]]:
         if not self.enabled or not self.enable_convo:
             return []
@@ -416,12 +449,13 @@ Only output the thought text, nothing else."""
             "Generate a short, natural conversation (2-4 lines total).\n"
             "Output JSON only: {\"output\":[[\"Name\",\"Utterance\"], ...]}."
         )
+        model = model_override or self._model_for_entity(entity_a)
         try:
             async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.host}/api/generate",
                     json={
-                        "model": self.model,
+                        "model": model,
                         "prompt": prompt,
                         "stream": False,
                         "options": {"temperature": 0.7, "num_predict": 120},

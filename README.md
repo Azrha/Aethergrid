@@ -26,7 +26,7 @@ This repo contains both frontend and backend. The exact run commands may evolve;
 - `docs/DEV_GUIDE.md`
 
 ### Ollama / agent brain config
-Copy `.env.example` to `.env` and set `OLLAMA_BASE_URL` + `OLLAMA_MODEL` to point at your local Ollama server.
+Copy `.env.example` to `.env` and set `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, and `OLLAMA_ROLE_MODELS` to map villager roles to models.
 
 Windows + WSL (dedicated GUI window): run `./run_gui.sh` from WSL.
 Fallback Electron launch is available via `run_desktop.cmd` (or `run_all.cmd`) from the repo root.
