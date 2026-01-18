@@ -16,9 +16,14 @@ import httpx
 
 logger = logging.getLogger("mythos")
 
-# Default Ollama configuration
-OLLAMA_HOST = "http://localhost:11434"
-DEFAULT_MODEL = "llama3.2"  # Fast, small model
+from .config import (
+    OLLAMA_BASE_URL,
+    OLLAMA_MODEL,
+    OLLAMA_THOUGHTS_ENABLED,
+    OLLAMA_ACTIONS_ENABLED,
+    OLLAMA_CONVO_ENABLED,
+    OLLAMA_TIMEOUT,
+)
 
 @dataclass
 class EntityThought:
@@ -43,14 +48,17 @@ class OllamaService:
     """Manages Ollama API connections and generates entity text"""
     
     def __init__(self):
-        self.host = OLLAMA_HOST
-        self.model = DEFAULT_MODEL
+        self.host = OLLAMA_BASE_URL
+        self.model = OLLAMA_MODEL
         self.enabled = False
         self.thoughts_queue: List[EntityThought] = []
         self.last_generation_time: Dict[int, float] = {}  # entity_id -> timestamp
         self.generation_cooldown = 5.0  # seconds between generations per entity
         self.last_action_time: Dict[int, float] = {}
         self.action_cooldown = 3.0
+        self.enable_thoughts = OLLAMA_THOUGHTS_ENABLED
+        self.enable_actions = OLLAMA_ACTIONS_ENABLED
+        self.enable_convo = OLLAMA_CONVO_ENABLED
         
     async def check_ollama_available(self) -> bool:
         """Check if Ollama server is running and available"""
@@ -81,6 +89,9 @@ class OllamaService:
         # World context
         time_of_day = context.get("time", 0) % 24
         nearby_entities = context.get("nearby_count", 0)
+        summary = context.get("summary", "")
+        memories = context.get("memories", [])
+        intent = context.get("intent", "")
         
         personality_hints = {
             "humanoid": "You are a curious settler, observing the world.",
@@ -92,6 +103,14 @@ class OllamaService:
         
         personality = personality_hints.get(entity_kind, personality_hints["creature"])
         
+        mem_block = ""
+        if summary:
+            mem_block += f"Summary: {summary}\n"
+        if intent:
+            mem_block += f"Intent: {intent}\n"
+        if memories:
+            mem_block += "Recent memories:\n" + "\n".join(f"- {m}" for m in memories[:6]) + "\n"
+
         prompt = f"""You are an entity in a pixel-art diorama world called Aethergrid.
 {personality}
 
@@ -100,6 +119,7 @@ Current state:
 - Energy: {energy}%
 - Wealth: {wealth}
 - Nearby entities: {nearby_entities}
+{mem_block}
 
 Generate a SHORT thought or speech (max 8 words) that this {entity_kind} might have.
 Be creative, whimsical, and match the pixel-art aesthetic.
@@ -116,6 +136,14 @@ Only output the thought text, nothing else."""
         world_w = context.get("world_w", 96)
         world_h = context.get("world_h", 96)
 
+        summary = context.get("summary", "")
+        intent = context.get("intent", "")
+        memory_hint = ""
+        if summary:
+            memory_hint += f"Summary: {summary}. "
+        if intent:
+            memory_hint += f"Intent: {intent}. "
+
         return (
             "You are an AI agent in Aethergrid. Return ONLY valid JSON.\\n"
             "Choose exactly one action from the whitelist: "
@@ -126,7 +154,7 @@ Only output the thought text, nothing else."""
             "{\"action\":\"emote\",\"type\":\"curious\"} OR "
             "{\"action\":\"interact\",\"targetId\":12,\"verb\":\"greet\"}.\\n"
             f"Context: kind={entity_kind}, pos=({x},{y}), energy={energy}, nearby={nearby}, "
-            f"world=({world_w},{world_h}).\\n"
+            f"world=({world_w},{world_h}). {memory_hint}\\n"
             "Keep text concise. Do NOT add extra keys."
         )
 
@@ -192,7 +220,7 @@ Only output the thought text, nothing else."""
         context: Optional[Dict[str, Any]] = None
     ) -> Optional[EntityThought]:
         """Generate a thought or speech for an entity"""
-        if not self.enabled:
+        if not self.enabled or not self.enable_thoughts:
             return None
             
         import time
@@ -208,7 +236,7 @@ Only output the thought text, nothing else."""
         prompt = self._build_entity_prompt(entity, context)
         
         try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
+            async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.host}/api/generate",
                     json={
@@ -252,7 +280,7 @@ Only output the thought text, nothing else."""
         entity: Dict[str, Any],
         context: Optional[Dict[str, Any]] = None
     ) -> Optional[EntityAction]:
-        if not self.enabled:
+        if not self.enabled or not self.enable_actions:
             return None
 
         import time
@@ -267,7 +295,7 @@ Only output the thought text, nothing else."""
         prompt = self._build_action_prompt(entity, context)
 
         try:
-            async with httpx.AsyncClient(timeout=6.0) as client:
+            async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.host}/api/generate",
                     json={
@@ -306,7 +334,7 @@ Only output the thought text, nothing else."""
         context: Optional[Dict[str, Any]] = None
     ) -> List[EntityThought]:
         """Generate thoughts for multiple entities (randomly selected)"""
-        if not self.enabled or not entities:
+        if not self.enabled or not self.enable_thoughts or not entities:
             return []
             
         # Select random entities
@@ -326,7 +354,7 @@ Only output the thought text, nothing else."""
         max_count: int = 1,
         context: Optional[Dict[str, Any]] = None
     ) -> List[EntityAction]:
-        if not self.enabled or not entities:
+        if not self.enabled or not self.enable_actions or not entities:
             return []
 
         selected = random.sample(entities, min(max_count, len(entities)))
@@ -336,6 +364,88 @@ Only output the thought text, nothing else."""
             if action:
                 actions.append(action)
         return actions
+
+    async def generate_summary(self, entity: Dict[str, Any], memories: List[str]) -> Optional[str]:
+        if not self.enabled or not self.enable_thoughts:
+            return None
+        if not memories:
+            return None
+        entity_kind = entity.get("kind", "creature")
+        prompt = (
+            "Summarize this entity's recent experiences in 1-2 sentences. "
+            "Keep it grounded, concrete, and concise.\n"
+            f"Entity type: {entity_kind}\n"
+            "Memories:\n- " + "\n- ".join(memories[:10])
+        )
+        try:
+            async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
+                response = await client.post(
+                    f"{self.host}/api/generate",
+                    json={
+                        "model": self.model,
+                        "prompt": prompt,
+                        "stream": False,
+                        "options": {"temperature": 0.3, "num_predict": 80},
+                    },
+                )
+            if response.status_code == 200:
+                data = response.json()
+                text = data.get("response", "").strip().replace("\n", " ")
+                return text[:240] if text else None
+        except Exception as e:
+            logger.warning(f"Ollama summary failed: {e}")
+        return None
+
+    async def generate_conversation(
+        self,
+        entity_a: Dict[str, Any],
+        entity_b: Dict[str, Any],
+        context: Optional[Dict[str, Any]] = None,
+    ) -> List[Dict[str, str]]:
+        if not self.enabled or not self.enable_convo:
+            return []
+        context = context or {}
+        name_a = str(entity_a.get("name", f"Entity {entity_a.get('id', '?')}"))
+        name_b = str(entity_b.get("name", f"Entity {entity_b.get('id', '?')}"))
+        kind_a = str(entity_a.get("kind", "creature"))
+        kind_b = str(entity_b.get("kind", "creature"))
+        prompt = (
+            f"Character 1: {name_a} ({kind_a})\n"
+            f"Character 2: {name_b} ({kind_b})\n"
+            "They are near each other in a small isometric town.\n"
+            "Generate a short, natural conversation (2-4 lines total).\n"
+            "Output JSON only: {\"output\":[[\"Name\",\"Utterance\"], ...]}."
+        )
+        try:
+            async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
+                response = await client.post(
+                    f"{self.host}/api/generate",
+                    json={
+                        "model": self.model,
+                        "prompt": prompt,
+                        "stream": False,
+                        "options": {"temperature": 0.7, "num_predict": 120},
+                    },
+                )
+            if response.status_code != 200:
+                return []
+            raw = response.json().get("response", "").strip()
+            if "{" in raw and "}" in raw:
+                raw = raw[raw.find("{") : raw.rfind("}") + 1]
+            data = json.loads(raw)
+            output = data.get("output", [])
+            lines: List[Dict[str, str]] = []
+            for entry in output:
+                if not isinstance(entry, list) or len(entry) < 2:
+                    continue
+                who = str(entry[0]).strip()
+                text = str(entry[1]).strip()
+                if who and text:
+                    lines.append({"name": who, "text": text})
+            return lines[:4]
+        except Exception as e:
+            logger.warning(f"Ollama conversation failed: {e}")
+            return []
     
     def get_active_thoughts(self, max_age_ms: float = 5000) -> List[Dict[str, Any]]:
         """Get thoughts that should still be displayed"""

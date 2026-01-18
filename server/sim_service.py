@@ -354,6 +354,13 @@ class SimulationService:
         async with self._lock:
             frame, elapsed = await asyncio.to_thread(self._step_sync)
             self.last_frame = frame
+        try:
+            from .brain_service import brain_service
+            payload = self.frame_payload()
+            if payload:
+                brain_service.ingest_frame(payload)
+        except Exception:
+            logger.exception("Brain ingest failed")
         await asyncio.to_thread(self._persist_sync, frame, elapsed)
 
     def _finite(self, value: Any, default: float = 0.0) -> float:

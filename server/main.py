@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import random
 from typing import Any, Dict, List
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Response
@@ -10,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .sim_service import SimulationService
 from .ollama_service import ollama_service
+from .brain_service import brain_service
 from engine.backend import gpu_available, gpu_available_cached
 
 logger = logging.getLogger("mythos")
@@ -30,6 +32,7 @@ app.add_middleware(
 async def _startup():
     asyncio.create_task(service.loop())
     asyncio.create_task(asyncio.to_thread(gpu_available))
+    asyncio.create_task(brain_service.auto_loop(service))
 
 
 @app.get("/api/presets")
@@ -167,34 +170,39 @@ async def ollama_generate(payload: Dict[str, Any]) -> Dict[str, Any]:
         return {"ok": True, "thoughts": []}
     
     entities = frame["entities"]
-    max_count = payload.get("max_count", 3)
+    max_count = int(payload.get("max_count", 3))
     with_actions = bool(payload.get("actions", False))
     apply_actions = bool(payload.get("apply_actions", with_actions))
+    with_convo = bool(payload.get("conversation", False))
     
     # Generate thoughts
-    thoughts = await ollama_service.generate_batch_thoughts(
-        entities=entities,
-        max_count=max_count,
-        context={"time": frame.get("t", 0)}
-    )
+    selected = random.sample(entities, min(max_count, len(entities)))
+    thoughts = []
+    for entity in selected:
+        context = brain_service.context_for(entity, frame)
+        thought = await ollama_service.generate_entity_thought(entity, context)
+        if thought:
+            thoughts.append(thought)
 
     actions = []
     if with_actions:
-        actions = await ollama_service.generate_batch_actions(
-            entities=entities,
-            max_count=1,
-            context={
-                "time": frame.get("t", 0),
-                "world_w": frame.get("w", 96),
-                "world_h": frame.get("h", 96),
-                "nearby_count": min(6, len(entities)),
-            },
-        )
+        selected_actions = random.sample(entities, min(1, len(entities)))
+        for entity in selected_actions:
+            context = brain_service.context_for(entity, frame)
+            action = await ollama_service.generate_entity_action(entity, context)
+            if action:
+                actions.append(action)
         if apply_actions and actions:
             service.apply_ai_actions([
                 {"entity_id": a.entity_id, "action": a.action, "payload": a.payload}
                 for a in actions
             ])
+
+    convo_lines = []
+    if with_convo:
+        pair = brain_service.brain.conversation_pair(frame)
+        if pair:
+            convo_lines = await ollama_service.generate_conversation(pair[0], pair[1], {})
     
     return {
         "ok": True,
@@ -210,6 +218,23 @@ async def ollama_generate(payload: Dict[str, Any]) -> Dict[str, Any]:
         "actions": [
             {"entity_id": a.entity_id, "action": a.action, "payload": a.payload}
             for a in actions
+        ],
+        "conversation": convo_lines,
+    }
+
+
+@app.get("/api/brain/memory/{entity_id}")
+async def brain_memory(entity_id: int) -> Dict[str, Any]:
+    memories = brain_service.brain.memories.get(entity_id, [])
+    summary = brain_service.brain.summaries.get(entity_id, "")
+    intent = brain_service.brain.intents.get(entity_id, "")
+    return {
+        "entity_id": entity_id,
+        "summary": summary,
+        "intent": intent,
+        "memories": [
+            {"t": m.t, "kind": m.kind, "text": m.text, "importance": m.importance}
+            for m in memories[-40:]
         ],
     }
 
