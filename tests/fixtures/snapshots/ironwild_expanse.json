@@ -2,10 +2,10 @@
   "id": "ironwild_expanse.json",
   "name": "Ironwild Expanse",
   "entities": 156,
-  "avg_x": 186.6131,
-  "avg_y": 161.9053,
-  "avg_vx": -0.0308,
-  "avg_vy": 3.5494,
-  "avg_energy": 2.416,
+  "avg_x": 186.9934,
+  "avg_y": 113.0321,
+  "avg_vx": 2.0885,
+  "avg_vy": 4.0034,
+  "avg_energy": 0.9257,
   "avg_wealth": 0.3297
 }

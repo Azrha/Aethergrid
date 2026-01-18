@@ -13,6 +13,11 @@ Only exported runtime assets:
 - `atlases/entities_atlas.webp`
 - `atlases/entities_atlas.json`
 
+## 3D models
+- Runtime GLB assets live under `frontend/public/assets/models/`.
+- Attribution notes live in `frontend/public/assets/models/ATTRIBUTION.md`.
+- External sources are also listed in `docs/CREDITS.md`.
+
 ## Style goals (vibe)
 - Readable silhouettes
 - Subtle animation loops (life without noise)

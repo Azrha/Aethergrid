@@ -1,4 +1,4 @@
-export type AssetStyle = "assets" | "procedural";
+export type AssetStyle = "assets" | "procedural" | "sprites";
 
 export type AssetSpec = {
   url: string;

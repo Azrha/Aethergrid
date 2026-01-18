@@ -1,11 +1,11 @@
 {
   "id": "fantasy.json",
-  "name": "Mythic Realms",
-  "entities": 139,
-  "avg_x": 166.8991,
-  "avg_y": 107.6571,
-  "avg_vx": 0.0208,
-  "avg_vy": -0.0276,
-  "avg_energy": 1.1236,
-  "avg_wealth": 0.0
+  "name": "Fantasy Kingdom",
+  "entities": 58,
+  "avg_x": 38.956,
+  "avg_y": 33.6724,
+  "avg_vx": -2.2979,
+  "avg_vy": 4.5511,
+  "avg_energy": 1.445,
+  "avg_wealth": 0.2919
 }

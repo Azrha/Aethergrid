@@ -1,0 +1,190 @@
+{
+  "name": "AI Village",
+  "description": "A tiny settlement with daily routines, social clustering, and ambient life.",
+  "seed": 21,
+  "consts": {
+    "W": 24,
+    "H": 24,
+    "DT": 1.0,
+    "G": 0.16,
+    "MAX_SPEED": 2.1,
+    "SUBSTEPS": 2,
+    "DAY_CYCLE": 240,
+    "WEATHER_CYCLE": 360,
+    "SEASON_CYCLE": 560,
+    "TERRAIN_SEED": 11,
+    "TERRAIN_SCALE": 0.95,
+    "TERRAIN_SMOOTH": 3,
+    "SEA_LEVEL": 0.14,
+    "WIND_X": 0.015,
+    "WIND_Y": 0.01
+  },
+  "profiles": [
+    {
+      "name": "Villagers",
+      "color": "settler",
+      "count": 2,
+      "mass_range": [0.8, 1.2],
+      "hardness_range": [0.6, 1.1],
+      "speed_range": [-0.7, 0.7],
+      "depth_range": [0.2, 0.9],
+      "energy_range": [0.7, 1.5],
+      "wealth_range": [0.2, 1.2]
+    },
+    {
+      "name": "Village Wildlife",
+      "color": "fauna",
+      "count": 1,
+      "mass_range": [0.9, 1.6],
+      "hardness_range": [0.7, 1.4],
+      "speed_range": [-0.6, 0.6],
+      "depth_range": [0.2, 0.8],
+      "energy_range": [0.7, 1.4]
+    },
+    {
+      "name": "Homestead",
+      "color": "habitat",
+      "count": 1,
+      "mass_range": [3.0, 6.0],
+      "hardness_range": [2.0, 4.0],
+      "speed_range": [0.0, 0.0],
+      "depth_range": [0.0, 0.2],
+      "static": true
+    },
+    {
+      "name": "Grove",
+      "color": "grove",
+      "count": 1,
+      "mass_range": [2.0, 4.0],
+      "hardness_range": [2.0, 3.5],
+      "speed_range": [0.0, 0.0],
+      "depth_range": [0.0, 0.2],
+      "static": true
+    }
+  ],
+  "laws": [
+    {
+      "name": "gravity",
+      "priority": 10,
+      "when": "true",
+      "actions": ["vy += G"]
+    },
+    {
+      "name": "air_drag",
+      "priority": 12,
+      "when": "true",
+      "actions": ["drag(0.014)"]
+    },
+    {
+      "name": "soft_collisions",
+      "priority": 18,
+      "when": "true",
+      "actions": ["collide(3.1, 0.88, 0.06)"]
+    },
+    {
+      "name": "village_social",
+      "priority": 8,
+      "when": "color == \"settler\"",
+      "actions": [
+        "cohere(24, 0.06, color == \"settler\")",
+        "align(22, 0.06, color == \"settler\")",
+        "separate(9, 0.08, color == \"settler\")",
+        "seek(W/2, H/2, 0.025)",
+        "attract(42, 0.3, color == \"habitat\")",
+        "follow_road(0.05)"
+      ]
+    },
+    {
+      "name": "habitat_anchor",
+      "priority": 9,
+      "when": "color == \"habitat\"",
+      "actions": [
+        "emit_home(0.9)",
+        "emit_market(0.5)",
+        "emit_settlement(0.4)",
+        "emit_road(0.2)",
+        "emit_sound(0.02)"
+      ]
+    },
+    {
+      "name": "grove_anchor",
+      "priority": 9,
+      "when": "color == \"grove\"",
+      "actions": [
+        "emit_farm(0.8)",
+        "emit_food(0.07)",
+        "emit_settlement(0.1)",
+        "emit_sound(0.015)"
+      ]
+    },
+    {
+      "name": "village_morning",
+      "priority": 9,
+      "when": "color == \"settler\" and day_phase < 0.35",
+      "actions": [
+        "follow_road(0.07)",
+        "seek_farm(0.05)",
+        "emit_road(0.04)",
+        "emit_settlement(0.03)",
+        "consume_food(0.03, 0.9)",
+        "metabolize(0.006)",
+        "wander(0.04)"
+      ]
+    },
+    {
+      "name": "village_midday",
+      "priority": 9,
+      "when": "color == \"settler\" and day_phase >= 0.35 and day_phase < 0.7",
+      "actions": [
+        "seek_market(0.05)",
+        "trade(0.035)",
+        "emit_sound(0.02)",
+        "wander(0.03)"
+      ]
+    },
+    {
+      "name": "village_evening",
+      "priority": 9,
+      "when": "color == \"settler\" and day_phase >= 0.7",
+      "actions": [
+        "seek_home(0.06)",
+        "emit_home(0.03)",
+        "drag(0.02)",
+        "wander(0.02)"
+      ]
+    },
+    {
+      "name": "fauna_graze",
+      "priority": 9,
+      "when": "color == \"fauna\"",
+      "actions": [
+        "wander(0.08)",
+        "cohere(18, 0.05, color == \"fauna\")",
+        "align(18, 0.05, color == \"fauna\")",
+        "separate(8, 0.08, color == \"fauna\")",
+        "avoid(W/2, H/2, 0.01)"
+      ]
+    },
+    {
+      "name": "fauna_night_roam",
+      "priority": 9,
+      "when": "color == \"fauna\" and day_phase >= 0.7",
+      "actions": [
+        "wander(0.14)",
+        "avoid(W/2, H/2, 0.02)"
+      ]
+    },
+    {
+      "name": "bounds",
+      "priority": 20,
+      "when": "true",
+      "actions": ["bounce(W, H, 0.85)"]
+    },
+    {
+      "name": "clamp",
+      "priority": 100,
+      "when": "true",
+      "actions": ["clamp_speed(MAX_SPEED)"]
+    }
+  ]
+}

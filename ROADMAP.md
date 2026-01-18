@@ -1,5 +1,7 @@
 # Mythos Roadmap — Alive World (Magnum Opus)
 
+Note: This file tracks core simulation and 3D asset progression. The pixel‑isometric frontend roadmap lives in `docs/ROADMAP.md`.
+
 ## Definition of "100% Alive"
 An alive world is a system where autonomous agents exhibit persistent motion, social behavior, environmental response, resource loops (growth/consumption), temporal cycles, and observable emergent patterns. It should include visual depth, interaction feedback, and data/metrics to verify stability and realism.
 
@@ -34,7 +36,7 @@ An alive world is a system where autonomous agents exhibit persistent motion, so
 
 ## Phase 5 — Narrative WorldPacks
 - [ ] Faction templates for lore worlds (e.g., “kingdoms”, “pirate fleets”)
-- [ ] WorldPack tooling: schema validation + editor helpers
+- [x] WorldPack tooling: schema validation + editor helpers
 - [ ] Behavior libraries (role-based behaviors)
  - [x] Expand worldpack library (oceanic, frostbound, emberfall, skyborne, ironwild)
 
@@ -43,7 +45,7 @@ An alive world is a system where autonomous agents exhibit persistent motion, so
 - [x] Unique species rosters per worldpack (avoid reusing human/alien/building defaults)
 - [x] World-specific physics profiles (gravity/drag/collision ranges tuned per setting)
 - [x] Terrain + climate signatures per world (seed/scale, rainfall, fertility bias)
-- [ ] Per-world sound/mood profiles (ambient emitters + seasonal intensity curves)
+- [x] Per-world sound/mood profiles (ambient emitters + seasonal intensity curves)
 - [x] Validation rule: each worldpack must change at least 3 axes (visual, species, physics, terrain)
 
 ## Phase 5.2 — 3D Asset Integration Plan (New)

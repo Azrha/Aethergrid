@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import random
 
 from engine.compiler import compile_program
 from engine.factory import seed_world
@@ -14,6 +15,7 @@ SNAPSHOT_DIR = ROOT / "tests" / "fixtures" / "snapshots"
 
 def _snapshot_summary(path: Path, steps: int = 20):
     pack = load_worldpack_json(path.read_text(encoding="utf-8"))
+    random.seed(int(pack.seed))
     dsl = worldpack_to_dsl(pack)
     prog = compile_program(dsl)
     consts = pack.consts or {}

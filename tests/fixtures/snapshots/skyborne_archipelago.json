@@ -2,10 +2,10 @@
   "id": "skyborne_archipelago.json",
   "name": "Skyborne Archipelago",
   "entities": 180,
-  "avg_x": 186.7467,
-  "avg_y": 142.2537,
-  "avg_vx": 0.0086,
-  "avg_vy": 2.1464,
-  "avg_energy": 3.2383,
+  "avg_x": 180.281,
+  "avg_y": 119.5889,
+  "avg_vx": -9.9652,
+  "avg_vy": -44.5501,
+  "avg_energy": 1.0195,
   "avg_wealth": 0.2782
 }

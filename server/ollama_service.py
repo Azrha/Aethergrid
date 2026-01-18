@@ -7,6 +7,7 @@ in the Aethergrid simulation.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import random
 from typing import Any, Dict, List, Optional
@@ -29,6 +30,15 @@ class EntityThought:
     timestamp: float
 
 
+@dataclass
+class EntityAction:
+    """An action instruction for an entity"""
+    entity_id: int
+    action: str
+    payload: Dict[str, Any]
+    timestamp: float
+
+
 class OllamaService:
     """Manages Ollama API connections and generates entity text"""
     
@@ -39,6 +49,8 @@ class OllamaService:
         self.thoughts_queue: List[EntityThought] = []
         self.last_generation_time: Dict[int, float] = {}  # entity_id -> timestamp
         self.generation_cooldown = 5.0  # seconds between generations per entity
+        self.last_action_time: Dict[int, float] = {}
+        self.action_cooldown = 3.0
         
     async def check_ollama_available(self) -> bool:
         """Check if Ollama server is running and available"""
@@ -94,6 +106,85 @@ Be creative, whimsical, and match the pixel-art aesthetic.
 Only output the thought text, nothing else."""
 
         return prompt
+
+    def _build_action_prompt(self, entity: Dict[str, Any], context: Dict[str, Any]) -> str:
+        entity_kind = entity.get("kind", "creature")
+        x = round(float(entity.get("x", 0.0)), 2)
+        y = round(float(entity.get("y", 0.0)), 2)
+        energy = entity.get("energy", 50)
+        nearby = context.get("nearby_count", 0)
+        world_w = context.get("world_w", 96)
+        world_h = context.get("world_h", 96)
+
+        return (
+            "You are an AI agent in Aethergrid. Return ONLY valid JSON.\\n"
+            "Choose exactly one action from the whitelist: "
+            "say, move_to, wait, emote, interact.\\n"
+            "Schema: {\"action\":\"say\",\"text\":\"...\"} OR "
+            "{\"action\":\"move_to\",\"x\":12.3,\"y\":45.6,\"z\":2.0} OR "
+            "{\"action\":\"wait\",\"ticks\":8} OR "
+            "{\"action\":\"emote\",\"type\":\"curious\"} OR "
+            "{\"action\":\"interact\",\"targetId\":12,\"verb\":\"greet\"}.\\n"
+            f"Context: kind={entity_kind}, pos=({x},{y}), energy={energy}, nearby={nearby}, "
+            f"world=({world_w},{world_h}).\\n"
+            "Keep text concise. Do NOT add extra keys."
+        )
+
+    def _parse_action(self, raw: str) -> Optional[Dict[str, Any]]:
+        if not raw:
+            return None
+        text = raw.strip()
+        # Attempt to extract JSON if wrapped in extra text
+        if "{" in text and "}" in text:
+            start = text.find("{")
+            end = text.rfind("}") + 1
+            text = text[start:end]
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            return None
+        return self._sanitize_action(data)
+
+    def _sanitize_action(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        action = str(data.get("action", "")).strip().lower()
+        if action == "say":
+            text = str(data.get("text", "")).strip()
+            if not text:
+                return None
+            return {"action": "say", "text": text[:80]}
+        if action == "move_to":
+            try:
+                x = float(data.get("x"))
+                y = float(data.get("y"))
+            except (TypeError, ValueError):
+                return None
+            payload = {"action": "move_to", "x": x, "y": y}
+            if "z" in data:
+                try:
+                    payload["z"] = float(data.get("z"))
+                except (TypeError, ValueError):
+                    pass
+            return payload
+        if action == "wait":
+            try:
+                ticks = int(data.get("ticks"))
+            except (TypeError, ValueError):
+                return None
+            ticks = max(1, min(60, ticks))
+            return {"action": "wait", "ticks": ticks}
+        if action == "emote":
+            emo = str(data.get("type", "")).strip()
+            if not emo:
+                return None
+            return {"action": "emote", "type": emo[:24]}
+        if action == "interact":
+            try:
+                target_id = int(data.get("targetId"))
+            except (TypeError, ValueError):
+                return None
+            verb = str(data.get("verb", "")).strip() or "interacts"
+            return {"action": "interact", "targetId": target_id, "verb": verb[:24]}
+        return None
     
     async def generate_entity_thought(
         self, 
@@ -155,6 +246,58 @@ Only output the thought text, nothing else."""
             logger.warning(f"Ollama generation failed: {e}")
             
         return None
+
+    async def generate_entity_action(
+        self,
+        entity: Dict[str, Any],
+        context: Optional[Dict[str, Any]] = None
+    ) -> Optional[EntityAction]:
+        if not self.enabled:
+            return None
+
+        import time
+        entity_id = entity.get("id", 0)
+        now = time.time()
+
+        last_time = self.last_action_time.get(entity_id, 0)
+        if now - last_time < self.action_cooldown:
+            return None
+
+        context = context or {}
+        prompt = self._build_action_prompt(entity, context)
+
+        try:
+            async with httpx.AsyncClient(timeout=6.0) as client:
+                response = await client.post(
+                    f"{self.host}/api/generate",
+                    json={
+                        "model": self.model,
+                        "prompt": prompt,
+                        "stream": False,
+                        "options": {
+                            "temperature": 0.4,
+                            "num_predict": 80,
+                        }
+                    }
+                )
+            if response.status_code == 200:
+                data = response.json()
+                raw = data.get("response", "").strip()
+                parsed = self._parse_action(raw)
+                if parsed:
+                    self.last_action_time[entity_id] = now
+                    action = str(parsed.get("action", "")).lower()
+                    payload = {k: v for k, v in parsed.items() if k != "action"}
+                    return EntityAction(
+                        entity_id=entity_id,
+                        action=action,
+                        payload=payload,
+                        timestamp=now,
+                    )
+        except Exception as e:
+            logger.warning(f"Ollama action generation failed: {e}")
+
+        return None
     
     async def generate_batch_thoughts(
         self,
@@ -176,6 +319,23 @@ Only output the thought text, nothing else."""
                 thoughts.append(thought)
                 
         return thoughts
+
+    async def generate_batch_actions(
+        self,
+        entities: List[Dict[str, Any]],
+        max_count: int = 1,
+        context: Optional[Dict[str, Any]] = None
+    ) -> List[EntityAction]:
+        if not self.enabled or not entities:
+            return []
+
+        selected = random.sample(entities, min(max_count, len(entities)))
+        actions: List[EntityAction] = []
+        for entity in selected:
+            action = await self.generate_entity_action(entity, context)
+            if action:
+                actions.append(action)
+        return actions
     
     def get_active_thoughts(self, max_age_ms: float = 5000) -> List[Dict[str, Any]]:
         """Get thoughts that should still be displayed"""
@@ -200,6 +360,17 @@ Only output the thought text, nothing else."""
     def clear_thoughts(self):
         """Clear all pending thoughts"""
         self.thoughts_queue = []
+
+    def queue_thought(self, entity_id: int, text: str, is_speech: bool = True, duration_ms: int = 3000):
+        import time
+        thought = EntityThought(
+            entity_id=entity_id,
+            text=text,
+            is_speech=is_speech,
+            duration_ms=duration_ms,
+            timestamp=time.time(),
+        )
+        self.thoughts_queue.append(thought)
 
 
 # Global singleton instance

@@ -14,6 +14,9 @@ type FieldPayload = {
   step: number;
   w: number;
   h: number;
+  d?: number;
+  voxels?: number[][][];
+  voxel_step?: { x: number; y: number; z: number };
   grid_w: number;
   grid_h: number;
   terrain: number[][];
@@ -118,6 +121,15 @@ export default function EngineView({
   const httpBase = useMemo(() => {
     return normalizeApiBase(apiBase);
   }, [apiBase]);
+
+  const updateEntityPositions = useCallback((payload: FramePayload) => {
+    const renderer = rendererRef.current;
+    const canvas = canvasRef.current;
+    if (!renderer || !canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const positions = renderer.getEntityScreenPositions(payload.entities, rect);
+    setEntityPositions(positions);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -268,6 +280,7 @@ export default function EngineView({
       worldRef.current = { w: payload.w, h: payload.h };
       renderer.setEntities(payload.entities || []);
       lastFrameRef.current = payload;
+      updateEntityPositions(payload);
       const now = performance.now();
       const prev = lastFrameTime.current;
       const fps = prev ? 1000 / Math.max(1, now - prev) : 0;
@@ -389,9 +402,10 @@ export default function EngineView({
       renderer.setEntities(initialFrame.entities || []);
       setHasFrame(true);
       pendingFrameRef.current = null;
+      updateEntityPositions(initialFrame);
       onFrame?.(initialFrame);
     }
-  }, [initialFrame, rendererReady]);
+  }, [initialFrame, rendererReady, updateEntityPositions]);
 
   // Ollama: Check connection on mount
   useEffect(() => {
@@ -420,7 +434,7 @@ export default function EngineView({
         const res = await fetch(`${httpBase}/api/ollama/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ max_count: 2 }),
+          body: JSON.stringify({ max_count: 2, actions: true, apply_actions: true }),
         });
         if (res.ok) {
           const data = await res.json();
@@ -444,33 +458,6 @@ export default function EngineView({
   const handleThoughtExpire = useCallback((entityId: number) => {
     setThoughts(prev => prev.filter(t => t.entity_id !== entityId));
   }, []);
-
-  // Update entity positions for speech bubble placement (simplified - centered in viewport)
-  useEffect(() => {
-    const frame = lastFrameRef.current;
-    if (!frame) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const positions = new Map<number, { x: number; y: number }>();
-    const rect = canvas.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    frame.entities.forEach((entity, idx) => {
-      // Simple positioning - spread entities around center with some offset
-      const angle = (idx / Math.max(1, frame.entities.length)) * Math.PI * 2;
-      const radius = 100 + Math.random() * 50;
-      positions.set(entity.id, {
-        x: centerX + Math.cos(angle) * radius,
-        y: centerY + Math.sin(angle) * radius,
-      });
-    });
-
-    setEntityPositions(positions);
-  }, [diagnostics]); // Re-calculate when diagnostics update (frame updates)
-
 
   return (
     <div className="canvas-wrap">

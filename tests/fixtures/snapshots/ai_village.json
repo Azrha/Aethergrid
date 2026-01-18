@@ -1,0 +1,11 @@
+{
+  "id": "ai_village.json",
+  "name": "AI Village",
+  "entities": 5,
+  "avg_x": 4.6,
+  "avg_y": 13.8,
+  "avg_vx": 1.2496,
+  "avg_vy": -0.9144,
+  "avg_energy": 1.2866,
+  "avg_wealth": 0.2749
+}

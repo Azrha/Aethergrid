@@ -2,10 +2,10 @@
   "id": "emberfall_reach.json",
   "name": "Emberfall Reach",
   "entities": 182,
-  "avg_x": 189.0509,
-  "avg_y": 164.0668,
-  "avg_vx": 0.0143,
-  "avg_vy": 3.0194,
-  "avg_energy": 2.7738,
+  "avg_x": 203.7866,
+  "avg_y": 135.9725,
+  "avg_vx": -13.0027,
+  "avg_vy": -32.0455,
+  "avg_energy": 1.0249,
   "avg_wealth": 0.3579
 }

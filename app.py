@@ -343,13 +343,21 @@ with right:
             # re-seed with final dimensions
             W, H = kernel.world.w, kernel.world.h
             DT = kernel.world.dt
+            depth = int(kernel.consts.get("D", kernel.consts.get("DEPTH", 16)))
+            terrain_seed = int(kernel.consts.get("TERRAIN_SEED", st.session_state.seed))
+            terrain_scale = float(kernel.consts.get("TERRAIN_SCALE", 1.0))
+            terrain_smooth = int(kernel.consts.get("TERRAIN_SMOOTH", 4))
             world = seed_world(
                 W,
                 H,
+                depth,
                 n=int(st.session_state.n),
                 seed=int(st.session_state.seed),
                 backend=backend,
                 profiles=st.session_state.spawn_profiles,
+                terrain_seed=terrain_seed,
+                terrain_scale=terrain_scale,
+                terrain_smooth=terrain_smooth,
             )
             world.dt = DT
             kernel = Kernel(world, prog.consts, prog.laws)

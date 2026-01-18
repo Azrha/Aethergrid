@@ -23,6 +23,7 @@ class Entity:
     sound: float = 0.0
     energy: float = 1.0
     wealth: float = 0.0
+    aquatic: bool = False
 
     def as_env(self) -> Dict[str, Any]:
         return {
@@ -30,7 +31,7 @@ class Entity:
             "vx": self.vx, "vy": self.vy, "vz": self.vz,
             "mass": self.mass, "hardness": self.hardness, "color": self.color,
             "age": self.age, "seen": self.seen, "alive": self.alive, "sound": self.sound,
-            "energy": self.energy, "wealth": self.wealth,
+            "energy": self.energy, "wealth": self.wealth, "aquatic": self.aquatic,
             "true": True, "false": False,
         }
 
@@ -48,6 +49,7 @@ class Entity:
         self.sound = float(env.get("sound", self.sound))
         self.energy = float(env.get("energy", self.energy))
         self.wealth = float(env.get("wealth", self.wealth))
+        self.aquatic = bool(env.get("aquatic", self.aquatic))
         if "color" in env:
             self.color = str(env["color"])
 
@@ -56,6 +58,7 @@ class World:
     w: int
     h: int
     dt: float
+    d: int = 16
     time: float = 0.0
     entities: List[Entity] = None
     sound_field: Any = None
@@ -72,6 +75,10 @@ class World:
     home_field: Any = None
     farm_field: Any = None
     market_field: Any = None
+    voxel_field: Any = None
+    terrain_scale: float = 1.0
+    sea_level: float = 0.45
+    gravity_z: float = -0.04
     day_cycle: float = 0.0
     weather_cycle: float = 0.0
     season_cycle: float = 0.0
@@ -81,6 +88,8 @@ class World:
     def __post_init__(self):
         if self.backend is None:
             self.backend = get_backend(False)
+        if self.d < 1:
+            self.d = 1
         if self.entities is None:
             self.entities = []
         if self.sound_field is None:
@@ -109,6 +118,8 @@ class World:
             self.farm_field = self.backend.zeros((self.h, self.w), dtype=self.backend.xp.float32)
         if self.market_field is None:
             self.market_field = self.backend.zeros((self.h, self.w), dtype=self.backend.xp.float32)
+        if self.voxel_field is None:
+            self.voxel_field = self.backend.zeros((self.d, self.h, self.w), dtype=self.backend.xp.uint8)
 
     def step_integrate(self, dt: float | None = None):
         step_dt = self.dt if dt is None else float(dt)
@@ -164,30 +175,101 @@ class World:
         self.farm_field *= 0.996
         self.market_field *= 0.996
 
+        # Keep voxel field in sync with terrain + water for 3D rendering/collision.
+        self._sync_voxel_field()
+
         self.paradox_heat *= 0.96
         self.trail_field *= 0.92
 
         for e in self.entities:
             if not e.alive:
                 continue
-            e.x += e.vx * step_dt
-            e.y += e.vy * step_dt
-            e.z += e.vz * step_dt
+            
+            # Apply gravity on Z axis (true 3D)
+            e.vz += float(self.gravity_z) * step_dt
+
+            # Calculate new position
+            new_x = e.x + e.vx * step_dt
+            new_y = e.y + e.vy * step_dt
+            new_z = e.z + e.vz * step_dt
+            
+            # WATER TRAVERSAL CHECK
+            # Determine if entity is aquatic or land-based
+            color = getattr(e, 'color', '').lower()
+            is_aquatic = bool(getattr(e, "aquatic", False)) or any(
+                term in color for term in ['fish', 'aqua', 'water', 'shark', 'jellyfish', 'diver', 'swimmer', 'ocean', 'sea', 'coral']
+            )
+            
+            # Check water level at new position
+            nx = int(max(0, min(self.w - 1, round(new_x))))
+            ny = int(max(0, min(self.h - 1, round(new_y))))
+            nz = int(max(0, min(self.d - 1, round(new_z))))
+            water_level = float(self.backend.asnumpy(self.water_field[ny, nx]))
+            voxel_here = self._voxel_at(nx, ny, nz)
+            in_water = voxel_here == 2
+
+            if is_aquatic:
+                # Aquatic entities: can only stay in water, slow down on land
+                if water_level < 0.3 and not in_water:
+                    # Slow down significantly on land
+                    e.vx *= 0.5
+                    e.vy *= 0.5
+                    # Don't update position fully - resist leaving water
+                    new_x = e.x + e.vx * step_dt * 0.2
+                    new_y = e.y + e.vy * step_dt * 0.2
+            else:
+                # Land entities: cannot enter deep water (>0.5)
+                if water_level > 0.5 or in_water:
+                    # Push back from water - don't enter
+                    e.vx = -e.vx * 0.8
+                    e.vy = -e.vy * 0.8
+                    # Keep old position
+                    new_x = e.x
+                    new_y = e.y
+                elif water_level > 0.3:
+                    # Shallow water - slow down significantly
+                    e.vx *= 0.6
+                    e.vy *= 0.6
+            
+            # Apply new position
+            e.x = new_x
+            e.y = new_y
+            e.z = new_z
             e.age += step_dt
             e.seen = max(0.0, e.seen - 0.01)
             
-            # BOUNDARY WRAPPING - Keep entities within world bounds
-            # Wrap around (teleport to opposite side when hitting boundary)
+            # BOUNDARY CLAMPING - Keep entities within world bounds without wrapping
+            bounce = 0.6
             if e.x < 0:
-                e.x = self.w - 1
+                e.x = 0.0
+                e.vx = abs(e.vx) * bounce
             elif e.x >= self.w:
-                e.x = 0
+                e.x = self.w - 1.0
+                e.vx = -abs(e.vx) * bounce
             if e.y < 0:
-                e.y = self.h - 1
+                e.y = 0.0
+                e.vy = abs(e.vy) * bounce
             elif e.y >= self.h:
-                e.y = 0
-            # Keep z within reasonable bounds (0 to 10 for height)
-            e.z = max(0.0, min(10.0, e.z))
+                e.y = self.h - 1.0
+                e.vy = -abs(e.vy) * bounce
+            # Keep z within reasonable bounds
+            max_z = max(1.0, float(self.d - 1))
+            e.z = max(0.0, min(max_z, e.z))
+
+            # Voxel collision: prevent entering solid blocks
+            cx = int(max(0, min(self.w - 1, round(e.x))))
+            cy = int(max(0, min(self.h - 1, round(e.y))))
+            cz = int(max(0, min(self.d - 1, round(e.z))))
+            if self._voxel_at(cx, cy, cz) == 1:
+                ground = self._column_height(cx, cy)
+                e.z = max(e.z, ground + 0.1)
+                e.vz = 0.0
+                # If still inside solid, roll back horizontal move
+                if self._voxel_at(cx, cy, int(max(0, min(self.d - 1, round(e.z))))) == 1:
+                    e.x = max(0.0, min(self.w - 1, e.x - e.vx * step_dt))
+                    e.y = max(0.0, min(self.h - 1, e.y - e.vy * step_dt))
+                    e.vx *= 0.2
+                    e.vy *= 0.2
 
             ix = int(max(0, min(self.w-1, round(e.x))))
             iy = int(max(0, min(self.h-1, round(e.y))))
@@ -216,3 +298,40 @@ class World:
         w[:] = w + self.backend.roll(flow_down, 1, 0)
         w[:] = w + self.backend.roll(flow_left, -1, 1)
         w[:] = w + self.backend.roll(flow_right, 1, 1)
+
+    def _voxel_at(self, x: int, y: int, z: int) -> int:
+        try:
+            return int(self.voxel_field[z, y, x])
+        except Exception:
+            return 0
+
+    def _column_height(self, x: int, y: int) -> float:
+        if self.voxel_field is None:
+            return 0.0
+        max_z = min(self.d - 1, int(self.d) - 1)
+        for z in range(max_z, -1, -1):
+            if self._voxel_at(x, y, z) == 1:
+                return float(z)
+        return 0.0
+
+    def _sync_voxel_field(self) -> None:
+        if self.voxel_field is None:
+            return
+        xp = self.backend.xp
+        d = int(max(1, self.d))
+        z = xp.arange(d, dtype=xp.int32)[:, None, None]
+        height_idx = xp.clip(
+            (self.terrain_field / max(self.terrain_scale, 0.001)) * (d - 1),
+            0,
+            d - 1,
+        ).astype(xp.int32)
+        solid = z <= height_idx[None, ...]
+        vox = solid.astype(xp.uint8)
+        sea_idx = int(max(0, min(d - 1, round(self.sea_level * (d - 1)))))
+        water_layers = xp.clip(xp.rint(self.water_field * 2.0), 0, d - 1).astype(xp.int32)
+        base_sea = xp.where(height_idx < sea_idx, sea_idx, height_idx)
+        water_top = xp.maximum(base_sea, height_idx + water_layers)
+        water_top = xp.clip(water_top, 0, d - 1)
+        water = (z > height_idx[None, ...]) & (z <= water_top[None, ...])
+        vox[water] = xp.uint8(2)
+        self.voxel_field[:] = vox

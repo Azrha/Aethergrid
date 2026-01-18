@@ -5,10 +5,7 @@ from typing import Any
 
 import numpy as np
 
-try:
-    import cupy as cp
-except Exception:
-    cp = None
+cp = None
 
 
 @dataclass(frozen=True)
@@ -71,6 +68,10 @@ def get_backend(use_gpu: bool = False) -> Backend:
 
 def gpu_available() -> bool:
     return _gpu_ready()
+
+
+def gpu_available_cached() -> bool:
+    return _GPU_READY
 
 
 def gpu_error() -> str | None:

@@ -25,6 +25,9 @@ The core goal is simple: **the world should feel alive**.
 This repo contains both frontend and backend. The exact run commands may evolve; see:
 - `docs/DEV_GUIDE.md`
 
+Windows + WSL (dedicated GUI window): run `./run_gui.sh` from WSL.
+Fallback Electron launch is available via `run_desktop.cmd` (or `run_all.cmd`) from the repo root.
+
 ---
 
 ## Asset pipeline (plug-and-play)

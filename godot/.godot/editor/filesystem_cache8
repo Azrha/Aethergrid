@@ -1,0 +1,9 @@
+ea4bc82a6ad023ab7ee23ee620429895
+::res://::1768740854
+Untitled.png::CompressedTexture2D::7752645900570681232::1768740854::1768740877::1::::<><>::
+::res://assets/::1768737108
+tileset.png::CompressedTexture2D::3849594370951859638::1768736567::1768737108::1::::<><>::
+::res://scenes/::1768740838
+Main.tscn::PackedScene::3264023844519769583::1768740838::0::1::::<><>::res://scripts/world.gd
+::res://scripts/::1768737154
+world.gd::GDScript::-1::1768740789::0::1::::<>Node3D<>::

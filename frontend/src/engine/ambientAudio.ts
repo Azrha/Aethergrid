@@ -13,6 +13,12 @@ const MOODS: Record<string, MoodProfile> = {
   fantasy: { baseFreq: 240, driftFreq: 0.2, filterFreq: 1800, filterQ: 1.2, gain: 0.07, noiseGain: 0.02, shimmer: true },
   dino: { baseFreq: 110, driftFreq: 0.08, filterFreq: 900, filterQ: 0.6, gain: 0.09, noiseGain: 0.035 },
   space: { baseFreq: 70, driftFreq: 0.05, filterFreq: 600, filterQ: 0.4, gain: 0.06, noiseGain: 0.015 },
+  oceanic: { baseFreq: 140, driftFreq: 0.09, filterFreq: 800, filterQ: 0.7, gain: 0.07, noiseGain: 0.04, shimmer: true },
+  frostbound: { baseFreq: 200, driftFreq: 0.18, filterFreq: 1600, filterQ: 1.0, gain: 0.05, noiseGain: 0.02, shimmer: true },
+  emberfall: { baseFreq: 90, driftFreq: 0.07, filterFreq: 700, filterQ: 0.5, gain: 0.1, noiseGain: 0.045 },
+  skyborne: { baseFreq: 220, driftFreq: 0.16, filterFreq: 1500, filterQ: 1.1, gain: 0.06, noiseGain: 0.02, shimmer: true },
+  ironwild: { baseFreq: 120, driftFreq: 0.06, filterFreq: 900, filterQ: 0.6, gain: 0.08, noiseGain: 0.03 },
+  neon: { baseFreq: 260, driftFreq: 0.22, filterFreq: 2000, filterQ: 1.4, gain: 0.06, noiseGain: 0.025, shimmer: true },
 };
 
 export class AmbientAudio {

@@ -19,3 +19,11 @@ tmp_mythos_test.sqlite3
 
 .env
 frontend/.env
+
+*.bak
+*.bak_*
+*.bak.*
+*_backup.png
+_backup_*/
+frontend/test-screenshots/
+frontend/test-screenshot.png

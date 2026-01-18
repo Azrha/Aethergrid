@@ -1,63 +1,130 @@
 {
-  "name": "Mythic Realms",
-  "description": "Floating islands, gentle magic, and living stone.",
-  "seed": 77,
+  "name": "Fantasy Kingdom",
+  "description": "A magical realm with wizards, beasts, and ancient forests.",
+  "seed": 777,
   "consts": {
-    "W": 320,
-    "H": 220,
+    "W": 64,
+    "H": 64,
     "DT": 1.0,
-    "G": 0.09,
-    "MAX_SPEED": 4.3,
+    "G": 0.15,
+    "MAX_SPEED": 2.2,
     "SUBSTEPS": 2,
-    "DAY_CYCLE": 260,
-    "WEATHER_CYCLE": 360,
-    "SEASON_CYCLE": 540,
-    "TERRAIN_SEED": 19,
+    "DAY_CYCLE": 200,
+    "WEATHER_CYCLE": 400,
+    "SEASON_CYCLE": 600,
+    "TERRAIN_SEED": 12,
     "TERRAIN_SCALE": 1.2,
     "TERRAIN_SMOOTH": 4,
-    "WIND_X": 0.012,
-    "WIND_Y": 0.0
+    "WIND_X": 0.02,
+    "WIND_Y": 0.01
   },
   "profiles": [
     {
-      "name": "Fae",
-      "color": "fae",
-      "count": 60,
-      "mass_range": [0.6, 1.0],
-      "hardness_range": [0.5, 0.9],
-      "speed_range": [-0.9, 0.9],
-      "depth_range": [0.3, 1.0],
-      "energy_range": [0.8, 1.6]
+      "name": "Elves",
+      "color": "settler",
+      "count": 15,
+      "mass_range": [
+        0.7,
+        1.0
+      ],
+      "hardness_range": [
+        0.5,
+        0.9
+      ],
+      "speed_range": [
+        -0.8,
+        0.8
+      ],
+      "depth_range": [
+        0.3,
+        0.9
+      ],
+      "energy_range": [
+        0.8,
+        1.5
+      ],
+      "wealth_range": [
+        0.5,
+        2.0
+      ]
     },
     {
-      "name": "Beasts",
-      "color": "beast",
-      "count": 45,
-      "mass_range": [1.1, 1.7],
-      "hardness_range": [0.8, 1.5],
-      "speed_range": [-0.7, 0.7],
-      "depth_range": [0.2, 0.9],
-      "energy_range": [0.6, 1.4]
+      "name": "Magical Beasts",
+      "color": "fauna",
+      "count": 20,
+      "mass_range": [
+        1.2,
+        2.5
+      ],
+      "hardness_range": [
+        1.0,
+        2.0
+      ],
+      "speed_range": [
+        -0.5,
+        0.5
+      ],
+      "depth_range": [
+        0.2,
+        0.8
+      ],
+      "energy_range": [
+        1.0,
+        2.0
+      ]
     },
     {
-      "name": "Obelisks",
-      "color": "obelisk",
-      "count": 18,
-      "mass_range": [3.5, 6.8],
-      "hardness_range": [2.4, 4.4],
-      "speed_range": [0.0, 0.0],
-      "depth_range": [0.0, 0.2],
+      "name": "Wizards",
+      "color": "outsider",
+      "count": 5,
+      "mass_range": [
+        0.6,
+        0.9
+      ],
+      "hardness_range": [
+        0.4,
+        0.8
+      ],
+      "speed_range": [
+        -0.6,
+        0.6
+      ],
+      "depth_range": [
+        0.4,
+        0.9
+      ],
+      "energy_range": [
+        2.0,
+        5.0
+      ]
+    },
+    {
+      "name": "Castles",
+      "color": "habitat",
+      "count": 6,
+      "mass_range": [
+        5.0,
+        10.0
+      ],
+      "hardness_range": [
+        3.0,
+        6.0
+      ],
       "static": true
     },
     {
-      "name": "Wyrms",
-      "color": "wyrm",
-      "count": 16,
-      "mass_range": [1.8, 3.2],
-      "hardness_range": [1.1, 2.0],
-      "speed_range": [-0.5, 0.5],
-      "depth_range": [0.4, 1.4],
-      "energy_range": [0.7, 1.6]
+      "name": "Ancient Oaks",
+      "color": "grove",
+      "count": 12,
+      "mass_range": [
+        3.0,
+        6.0
+      ],
+      "hardness_range": [
+        2.0,
+        4.0
+      ],
+      "static": true
     }
   ],
   "laws": [
@@ -65,49 +132,72 @@
       "name": "gravity",
       "priority": 10,
       "when": "true",
-      "actions": ["vy += G"]
+      "actions": [
+        "vy += G"
+      ]
     },
     {
-      "name": "magic_lift",
+      "name": "magic_drag",
       "priority": 12,
-      "when": "color == \"fae\" or color == \"obelisk\"",
-      "actions": ["vy -= 0.18 * (0.5 + rand())"]
-    },
-    {
-      "name": "wandering_beasts",
-      "priority": 9,
-      "when": "color == \"beast\"",
-      "actions": ["wander(0.05)", "cohere(18, 0.05, color == \"beast\")", "separate(8, 0.08, color == \"beast\")", "emit_sound(0.25 * rand())"]
-    },
-    {
-      "name": "wyrm_glide",
-      "priority": 8,
-      "when": "color == \"wyrm\"",
-      "actions": ["wander(0.04)", "cohere(26, 0.06, color == \"wyrm\")", "align(26, 0.05, color == \"wyrm\")", "emit_sound(0.3 * rand())"]
-    },
-    {
-      "name": "gentle_drag",
-      "priority": 11,
       "when": "true",
-      "actions": ["drag(0.01)"]
+      "actions": [
+        "drag(0.01)"
+      ]
     },
     {
       "name": "soft_collisions",
-      "priority": 20,
+      "priority": 18,
       "when": "true",
-      "actions": ["collide(3.1, 0.86, 0.06)"]
+      "actions": [
+        "collide(3.0, 0.9, 0.05)"
+      ]
+    },
+    {
+      "name": "beast_roam",
+      "priority": 9,
+      "when": "color == \"fauna\"",
+      "actions": [
+        "wander(0.08)",
+        "cohere(20, 0.04, color == \"fauna\")",
+        "separate(10, 0.1, color == \"fauna\")",
+        "avoid(W/2, H/2, 0.02)"
+      ]
+    },
+    {
+      "name": "elf_patrol",
+      "priority": 8,
+      "when": "color == \"settler\"",
+      "actions": [
+        "cohere(25, 0.06, color == \"settler\")",
+        "align(25, 0.06, color == \"settler\")",
+        "seek(W/2, H/2, 0.03)",
+        "attract(50, 0.25, color == \"habitat\")"
+      ]
+    },
+    {
+      "name": "wizard_ritual",
+      "priority": 7,
+      "when": "color == \"outsider\"",
+      "actions": [
+        "wander(0.04)",
+        "attract(80, 0.3, color == \"grove\")"
+      ]
     },
     {
       "name": "bounds",
-      "priority": 30,
+      "priority": 20,
       "when": "true",
-      "actions": ["bounce(W, H, 0.9)"]
+      "actions": [
+        "bounce(W, H, 0.85)"
+      ]
     },
     {
       "name": "clamp",
       "priority": 100,
       "when": "true",
-      "actions": ["clamp_speed(MAX_SPEED)"]
+      "actions": [
+        "clamp_speed(MAX_SPEED)"
+      ]
     }
   ]
 }

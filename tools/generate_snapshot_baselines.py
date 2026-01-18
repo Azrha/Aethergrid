@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 from pathlib import Path
 from typing import Dict, Any
 
@@ -16,6 +17,7 @@ OUT_DIR = ROOT / "tests" / "fixtures" / "snapshots"
 
 def snapshot_summary(path: Path, steps: int = 20) -> Dict[str, Any]:
     pack = load_worldpack_json(path.read_text(encoding="utf-8"))
+    random.seed(int(pack.seed))
     dsl = worldpack_to_dsl(pack)
     prog = compile_program(dsl)
     consts = pack.consts or {}

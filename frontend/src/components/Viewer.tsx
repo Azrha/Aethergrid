@@ -19,7 +19,7 @@ export default function Viewer() {
   }
   const params = new URLSearchParams(window.location.search);
   const theme = (params.get("theme") || "living").trim();
-  const assetStyle = (params.get("assets") || "assets").trim() as "assets" | "procedural";
+  const assetStyle = (params.get("assets") || "assets").trim() as "assets" | "procedural" | "sprites";
   const modeParam = (params.get("mode") || "3d").trim();
   const mode = modeParam === "2d" ? "2d" : "3d";
   return (

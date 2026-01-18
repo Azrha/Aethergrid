@@ -28,13 +28,22 @@ fi
 # Trap SIGINT to kill background processes
 trap 'kill $(jobs -p)' SIGINT
 
-echo "[INFO] Starting backend..."
-.venv/bin/uvicorn server.main:app --host 127.0.0.1 --port 8000 &
+BACKEND_HOST="${AETHER_BACKEND_HOST:-0.0.0.0}"
+BACKEND_PORT="${AETHER_BACKEND_PORT:-8000}"
+FRONTEND_HOST="${AETHER_FRONTEND_HOST:-0.0.0.0}"
+FRONTEND_PORT="${AETHER_FRONTEND_PORT:-5173}"
+VITE_API_URL="${VITE_API_URL:-${AETHER_API_URL:-}}"
+
+echo "[INFO] Starting backend on ${BACKEND_HOST}:${BACKEND_PORT}..."
+.venv/bin/uvicorn server.main:app --host "$BACKEND_HOST" --port "$BACKEND_PORT" &
 BACKEND_PID=$!
 
 echo "[INFO] Starting frontend..."
 cd frontend
-npm run dev -- --host &
+if [ -n "$VITE_API_URL" ]; then
+    export VITE_API_URL
+fi
+npm run dev -- --host "$FRONTEND_HOST" --port "$FRONTEND_PORT" &
 FRONTEND_PID=$!
 
 echo "[INFO] Stack running."

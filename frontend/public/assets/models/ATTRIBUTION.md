@@ -4,12 +4,19 @@ Models in `external/` are from the `google/model-viewer` repository and are lice
 https://github.com/google/model-viewer
 
 Files:
+- `animal.glb`
 - `astronaut.glb`
-- `neil_armstrong.glb`
-- `soldier.glb`
-- `robot_expressive.glb`
+- `buggy.glb`
+- `dragon.glb`
+- `fish.glb`
 - `horse.glb`
+- `humanoid.glb`
+- `neil_armstrong.glb`
+- `pilot.glb`
+- `robot_expressive.glb`
 - `rocket_ship.glb`
+- `settler.glb`
+- `soldier.glb`
 
 ## Generated Assets
 

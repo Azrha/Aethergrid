@@ -14,8 +14,10 @@ def _entity_to_dict(e: Entity) -> Dict[str, Any]:
         "id": e.id,
         "x": e.x,
         "y": e.y,
+        "z": e.z,
         "vx": e.vx,
         "vy": e.vy,
+        "vz": e.vz,
         "mass": e.mass,
         "hardness": e.hardness,
         "color": e.color,
@@ -23,6 +25,8 @@ def _entity_to_dict(e: Entity) -> Dict[str, Any]:
         "seen": e.seen,
         "alive": e.alive,
         "sound": e.sound,
+        "energy": e.energy,
+        "wealth": e.wealth,
     }
 
 

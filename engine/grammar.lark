@@ -2,37 +2,23 @@
 %import common.WS_INLINE
 %import common.NEWLINE -> _NL
 %ignore WS_INLINE
-%ignore _NL
 
-start: (stmt)*
+COMMENT: /#[^\n]*/
+%ignore COMMENT
 
-stmt: const_stmt
-    | law_stmt
+start: (_NL | stmt)*
 
-// Const statement
-const_stmt: "const" NAME "=" REST_OF_LINE
+stmt: const_stmt _NL*
+    | law_stmt _NL*
 
-// Law statement
-// explicit keywords allow us to strictly bound the regexes
-law_stmt: "law" NAME "priority" PRIO "when" CONDITION "do" action_block "end"
+const_stmt: "const" NAME "=" LINE_EXPR
 
-action_block: raw_action (";" raw_action)*
+law_stmt: "law" NAME "priority" PRIO _NL* "when" LINE_EXPR _NL* action_block "end"
 
-// Terminals
-// We prioritize explicit keywords "end" and "do" by defining them 
-// or using regex negative lookahead so generic text doesn't eat them.
+action_block: action_line+
+action_line: "do" ACTION_TEXT _NL*
 
-// Priority number
 PRIO: /[-0-9.]+/
-
-// Condition: everything until 'do' keyword
-// We use a negative lookahead to ensure we don't consume 'do'
-CONDITION: /(?!do\b)[^#\n]+/
-
-// Raw action: everything until ';' or 'end' keyword
-// We ensure we don't consume 'end'
-raw_action: /(?!end\b)[^;\n#]+/
-
-// Helper for consts
-REST_OF_LINE: /[^#\n]+/
+LINE_EXPR: /[^\n#]+/
+ACTION_TEXT: /[^\n#]+/
 

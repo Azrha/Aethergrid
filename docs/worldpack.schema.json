@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aethergrid Worldpack",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["name", "profiles"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "seed": { "type": "integer" },
+    "mood": { "type": "string" },
+    "consts": {
+      "type": "object",
+      "additionalProperties": { "type": ["number", "string", "boolean"] }
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "name": { "type": "string" },
+          "color": { "type": "string" },
+          "count": { "type": "integer", "minimum": 0 },
+          "static": { "type": "boolean" },
+          "aquatic": { "type": "boolean" },
+          "mass_range": { "$ref": "#/$defs/range" },
+          "hardness_range": { "$ref": "#/$defs/range" },
+          "speed_range": { "$ref": "#/$defs/range" },
+          "depth_range": { "$ref": "#/$defs/range" },
+          "energy_range": { "$ref": "#/$defs/range" },
+          "wealth_range": { "$ref": "#/$defs/range" }
+        }
+      }
+    },
+    "laws": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "name": { "type": "string" },
+          "priority": { "type": "integer" },
+          "when": { "type": "string" },
+          "actions": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "range": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "number" }
+    }
+  }
+}

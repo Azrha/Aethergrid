@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://bmrd84gqa4nn0"]
+
+[ext_resource type="Script" path="res://scripts/world.gd" id="1"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Camera" type="Camera3D" parent="."]
+projection = 1
+size = 16.0
+near = 0.1
+far = 200.0
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+light_energy = 0.9
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="Ground" type="Node3D" parent="World"]
+
+[node name="Entities" type="Node3D" parent="World"]

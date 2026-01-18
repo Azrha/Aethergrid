@@ -2,10 +2,10 @@
   "id": "frostbound_frontier.json",
   "name": "Frostbound Frontier",
   "entities": 178,
-  "avg_x": 172.2512,
-  "avg_y": 160.0711,
-  "avg_vx": -0.0293,
-  "avg_vy": 3.2372,
-  "avg_energy": 2.9477,
+  "avg_x": 168.3681,
+  "avg_y": 128.6517,
+  "avg_vx": -4.44,
+  "avg_vy": -10.0605,
+  "avg_energy": 0.9639,
   "avg_wealth": 0.1976
 }

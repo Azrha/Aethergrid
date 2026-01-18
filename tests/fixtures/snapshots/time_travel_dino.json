@@ -2,10 +2,10 @@
   "id": "time_travel_dino.json",
   "name": "Dinosaur Era",
   "entities": 144,
-  "avg_x": 165.1102,
-  "avg_y": 153.1709,
-  "avg_vx": -0.1212,
-  "avg_vy": 2.8183,
-  "avg_energy": 2.985,
+  "avg_x": 190.4663,
+  "avg_y": 135.3665,
+  "avg_vx": -12.737,
+  "avg_vy": -180.2621,
+  "avg_energy": 1.5637,
   "avg_wealth": 0.0
 }
