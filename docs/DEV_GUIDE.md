@@ -12,6 +12,11 @@
 2) Start frontend
 3) Verify websocket updates arrive and render
 
+## Godot client (local)
+1) Start backend (FastAPI server)
+2) Open `godot/project.godot` in Godot 4.x
+3) Press Play and select a preset in the UI
+
 ## One-command launch (Windows + WSL)
 Use the dedicated GUI wrapper with the WSL backend/frontend:
 

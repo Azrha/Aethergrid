@@ -1,21 +1,140 @@
-[gd_scene load_steps=2 format=3 uid="uid://bmrd84gqa4nn0"]
+[gd_scene load_steps=5 format=3 uid="uid://bmrd84gqa4nn0"]
 
-[ext_resource type="Script" path="res://scripts/world.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/render/terrain_renderer.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/render/wall_renderer.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/render/entity_renderer.gd" id="4"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1")
 
-[node name="Camera" type="Camera3D" parent="."]
+[node name="WorldRoot" type="Node3D" parent="."]
+
+[node name="Terrain" type="Node3D" parent="WorldRoot"]
+script = ExtResource("2")
+
+[node name="Walls" type="Node3D" parent="WorldRoot"]
+script = ExtResource("3")
+
+[node name="Entities" type="Node3D" parent="WorldRoot"]
+script = ExtResource("4")
+
+[node name="CameraRig" type="Node3D" parent="."]
+
+[node name="Pivot" type="Node3D" parent="CameraRig"]
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig/Pivot"]
 projection = 1
-size = 16.0
+size = 12.0
 near = 0.1
 far = 200.0
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 light_energy = 0.9
 
-[node name="World" type="Node3D" parent="."]
+[node name="UI" type="CanvasLayer" parent="."]
 
-[node name="Ground" type="Node3D" parent="World"]
+[node name="Panel" type="PanelContainer" parent="UI"]
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 360.0
+offset_bottom = 640.0
 
-[node name="Entities" type="Node3D" parent="World"]
+[node name="Scroll" type="ScrollContainer" parent="UI/Panel"]
+custom_minimum_size = Vector2(336, 620)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="UI/Panel/Scroll"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Title" type="Label" parent="UI/Panel/Scroll/VBox"]
+text = "Aethergrid"
+
+[node name="PresetsRow" type="HBoxContainer" parent="UI/Panel/Scroll/VBox"]
+
+[node name="PresetsLabel" type="Label" parent="UI/Panel/Scroll/VBox/PresetsRow"]
+text = "Preset"
+
+[node name="PresetDropdown" type="OptionButton" parent="UI/Panel/Scroll/VBox/PresetsRow"]
+size_flags_horizontal = 3
+
+[node name="PresetDesc" type="Label" parent="UI/Panel/Scroll/VBox"]
+text = ""
+autowrap_mode = 3
+
+[node name="SeedRow" type="HBoxContainer" parent="UI/Panel/Scroll/VBox"]
+
+[node name="SeedLabel" type="Label" parent="UI/Panel/Scroll/VBox/SeedRow"]
+text = "Seed"
+
+[node name="SeedSpin" type="SpinBox" parent="UI/Panel/Scroll/VBox/SeedRow"]
+size_flags_horizontal = 3
+
+[node name="NRow" type="HBoxContainer" parent="UI/Panel/Scroll/VBox"]
+
+[node name="NLabel" type="Label" parent="UI/Panel/Scroll/VBox/NRow"]
+text = "N"
+
+[node name="NSpin" type="SpinBox" parent="UI/Panel/Scroll/VBox/NRow"]
+size_flags_horizontal = 3
+
+[node name="BackendRow" type="HBoxContainer" parent="UI/Panel/Scroll/VBox"]
+
+[node name="BackendLabel" type="Label" parent="UI/Panel/Scroll/VBox/BackendRow"]
+text = "Backend"
+
+[node name="BackendOption" type="OptionButton" parent="UI/Panel/Scroll/VBox/BackendRow"]
+size_flags_horizontal = 3
+
+[node name="ApplyRow" type="HBoxContainer" parent="UI/Panel/Scroll/VBox"]
+
+[node name="ApplyButton" type="Button" parent="UI/Panel/Scroll/VBox/ApplyRow"]
+text = "Apply"
+size_flags_horizontal = 3
+
+[node name="RunRow" type="HBoxContainer" parent="UI/Panel/Scroll/VBox"]
+
+[node name="RunButton" type="Button" parent="UI/Panel/Scroll/VBox/RunRow"]
+text = "Run"
+size_flags_horizontal = 3
+
+[node name="TickLabel" type="Label" parent="UI/Panel/Scroll/VBox/RunRow"]
+text = "tick"
+
+[node name="TickSpin" type="SpinBox" parent="UI/Panel/Scroll/VBox/RunRow"]
+custom_minimum_size = Vector2(80, 0)
+
+[node name="StepsLabel" type="Label" parent="UI/Panel/Scroll/VBox/RunRow"]
+text = "steps"
+
+[node name="StepsSpin" type="SpinBox" parent="UI/Panel/Scroll/VBox/RunRow"]
+custom_minimum_size = Vector2(70, 0)
+
+[node name="ThemeRow" type="HBoxContainer" parent="UI/Panel/Scroll/VBox"]
+
+[node name="MoodLabel" type="Label" parent="UI/Panel/Scroll/VBox/ThemeRow"]
+text = "mood: living"
+
+[node name="ThemeDropdown" type="OptionButton" parent="UI/Panel/Scroll/VBox/ThemeRow"]
+size_flags_horizontal = 3
+
+[node name="OllamaRow" type="HBoxContainer" parent="UI/Panel/Scroll/VBox"]
+
+[node name="OllamaStatusButton" type="Button" parent="UI/Panel/Scroll/VBox/OllamaRow"]
+text = "Ollama Status"
+
+[node name="OllamaGenerateButton" type="Button" parent="UI/Panel/Scroll/VBox/OllamaRow"]
+text = "Generate Thoughts"
+
+[node name="ThoughtsBox" type="RichTextLabel" parent="UI/Panel/Scroll/VBox"]
+custom_minimum_size = Vector2(320, 140)
+text = ""
+
+[node name="DebugLabel" type="Label" parent="UI/Panel/Scroll/VBox"]
+text = ""
